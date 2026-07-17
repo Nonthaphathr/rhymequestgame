@@ -1,0 +1,2102 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#111827" />
+  <meta name="description" content="Rhyme Quest เกมฝึกคำคล้องจองสำหรับนักเรียนชั้นมัธยมศึกษาปีที่ 1" />
+  <title>Rhyme Quest | ภารกิจพิชิตคำคล้องจอง</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <style>
+    /* =========================================================
+       SECTION: DESIGN TOKENS
+       แก้สีหลักของเกมได้จากส่วนนี้
+    ========================================================== */
+    :root {
+      --bg: #07111f;
+      --bg-2: #101c31;
+      --panel: rgba(16, 28, 49, 0.86);
+      --panel-strong: #13213a;
+      --line: rgba(255, 255, 255, 0.10);
+      --text: #f8fafc;
+      --muted: #9fb0c7;
+      --primary: #7c3aed;
+      --primary-2: #a855f7;
+      --accent: #22d3ee;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --white: #ffffff;
+      --shadow: 0 24px 60px rgba(0, 0, 0, .28);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Kanit", system-ui, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 10%, rgba(124, 58, 237, .25), transparent 25%),
+        radial-gradient(circle at 88% 22%, rgba(34, 211, 238, .16), transparent 25%),
+        linear-gradient(145deg, var(--bg), var(--bg-2));
+      overflow-x: hidden;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .hidden { display: none !important; }
+
+    .app-shell {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 18px 0 28px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 4px 20px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark {
+      width: 44px; height: 44px; border-radius: 15px;
+      display: grid; place-items: center;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: 0 10px 28px rgba(124, 58, 237, .35);
+      font-size: 22px;
+    }
+    .brand h1 { margin: 0; font-size: 1.05rem; line-height: 1.1; }
+    .brand small { color: var(--muted); font-weight: 300; }
+
+    .connection-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 9px 12px; border: 1px solid var(--line);
+      border-radius: 999px; background: rgba(255,255,255,.05);
+      color: var(--muted); font-size: .86rem;
+    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--warning); box-shadow: 0 0 0 4px rgba(245,158,11,.12); }
+    .dot.online { background: var(--success); box-shadow: 0 0 0 4px rgba(34,197,94,.12); }
+
+    main { flex: 1; display: grid; place-items: center; }
+    .screen { width: 100%; animation: fadeIn .35s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+    .hero-card, .game-card, .report-card {
+      border: 1px solid var(--line);
+      background: linear-gradient(160deg, rgba(19,33,58,.94), rgba(10,20,36,.94));
+      box-shadow: var(--shadow);
+      border-radius: var(--radius-xl);
+      backdrop-filter: blur(18px);
+    }
+
+    .hero-card {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 28px;
+      padding: clamp(24px, 4vw, 52px);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute; right: -90px; top: -90px;
+      width: 290px; height: 290px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(34,211,238,.16), transparent 66%);
+      pointer-events: none;
+    }
+
+    .eyebrow { color: #c4b5fd; letter-spacing: .08em; font-weight: 600; font-size: .86rem; }
+    .hero-title { margin: 10px 0 12px; font-size: clamp(2.15rem, 6vw, 4.8rem); line-height: .98; letter-spacing: -.04em; }
+    .hero-title span { color: #67e8f9; }
+    .hero-copy { color: var(--muted); font-size: 1.05rem; max-width: 620px; line-height: 1.75; }
+
+    .feature-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .feature-chip { border: 1px solid var(--line); border-radius: 999px; padding: 9px 12px; color: #dbeafe; background: rgba(255,255,255,.04); font-size: .9rem; }
+
+    .login-panel {
+      background: rgba(255,255,255,.045);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 22px;
+      align-self: center;
+    }
+    .login-panel h2 { margin: 0 0 4px; }
+    .login-panel p { color: var(--muted); margin: 0 0 18px; font-size: .93rem; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field.full { grid-column: 1 / -1; }
+    label { display: block; color: #dbeafe; margin-bottom: 6px; font-size: .9rem; }
+    input {
+      width: 100%; border: 1px solid var(--line); background: rgba(3,7,18,.52);
+      color: white; border-radius: 13px; padding: 13px 14px; outline: none;
+      transition: .2s ease;
+    }
+    input:focus { border-color: rgba(34,211,238,.75); box-shadow: 0 0 0 4px rgba(34,211,238,.08); }
+
+    .btn {
+      border: 0; border-radius: 14px; padding: 13px 18px; font-weight: 600;
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:disabled { opacity: .48; cursor: not-allowed; transform: none; }
+    .btn-primary { color: white; background: linear-gradient(135deg, var(--primary), var(--primary-2)); box-shadow: 0 14px 28px rgba(124,58,237,.28); }
+    .btn-secondary { color: white; background: rgba(255,255,255,.08); border: 1px solid var(--line); }
+    .btn-success { color: #052e16; background: #86efac; }
+    .btn-block { width: 100%; margin-top: 15px; }
+
+    /* =========================================================
+       SECTION: GAME LAYOUT
+    ========================================================== */
+    .game-layout { display: grid; grid-template-columns: 260px 1fr; gap: 18px; align-items: start; }
+    .side-panel {
+      position: sticky; top: 16px;
+      border: 1px solid var(--line); border-radius: 22px;
+      background: rgba(12,23,41,.82); padding: 18px;
+    }
+    .student-box { padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .student-box strong { display: block; font-size: 1.05rem; }
+    .student-box small { color: var(--muted); }
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+    .stat-box { background: rgba(255,255,255,.045); border-radius: 14px; padding: 11px; }
+    .stat-box span { display: block; color: var(--muted); font-size: .76rem; }
+    .stat-box b { font-size: 1.18rem; }
+
+    .stage-list { display: grid; gap: 8px; margin-top: 16px; }
+    .stage-item { display: grid; grid-template-columns: 34px 1fr; gap: 10px; align-items: center; padding: 9px; border-radius: 13px; color: var(--muted); }
+    .stage-item.active { background: rgba(124,58,237,.14); color: white; }
+    .stage-item.done { color: #86efac; }
+    .stage-no { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: rgba(255,255,255,.06); font-weight: 700; }
+    .stage-item.active .stage-no { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; }
+    .stage-item strong { font-size: .9rem; display: block; }
+    .stage-item small { font-size: .73rem; }
+
+    .game-card { padding: clamp(18px, 3vw, 34px); min-height: 620px; display: flex; flex-direction: column; }
+    .game-head { display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+    .stage-badge { display: inline-flex; gap: 8px; align-items: center; background: rgba(124,58,237,.15); color: #ddd6fe; border: 1px solid rgba(167,139,250,.18); padding: 8px 12px; border-radius: 999px; font-size: .86rem; }
+    .question-count { color: var(--muted); font-size: .9rem; }
+    .progress-track { width: 100%; height: 9px; border-radius: 999px; background: rgba(255,255,255,.07); overflow: hidden; margin: 18px 0 26px; }
+    .progress-bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: inherit; transition: width .35s ease; }
+
+    .question-area { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .question-icon { font-size: 2rem; margin-bottom: 8px; }
+    .question-title { font-size: clamp(1.45rem, 3vw, 2.2rem); line-height: 1.35; margin: 0; }
+    .question-hint { color: var(--muted); margin: 9px 0 0; line-height: 1.6; }
+
+    .prompt-word {
+      display: inline-block; margin: 22px 0 10px; padding: 16px 28px; border-radius: 20px;
+      background: linear-gradient(135deg, rgba(124,58,237,.24), rgba(34,211,238,.12));
+      border: 1px solid rgba(167,139,250,.26); font-size: clamp(2rem, 7vw, 4.6rem); font-weight: 800; letter-spacing: .02em;
+    }
+
+    .chain-box, .poem-box {
+      margin: 22px 0 4px; padding: 20px; border-radius: 20px;
+      background: rgba(255,255,255,.045); border: 1px solid var(--line);
+    }
+    .chain-line { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: clamp(1.15rem, 2.4vw, 1.65rem); font-weight: 600; }
+    .chain-node { padding: 10px 14px; border-radius: 14px; background: rgba(34,211,238,.09); border: 1px solid rgba(34,211,238,.15); }
+    .chain-arrow { color: #67e8f9; }
+    .poem-box { font-size: clamp(1.15rem, 2.4vw, 1.55rem); line-height: 1.95; }
+    .poem-box .target { color: #fde68a; font-weight: 700; text-decoration: underline dotted rgba(253,230,138,.45) 3px; text-underline-offset: 5px; }
+
+    .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+    .choice-btn {
+      border: 1px solid var(--line); border-radius: 16px; color: white;
+      background: rgba(255,255,255,.05); padding: 16px; text-align: left;
+      transition: .18s ease; min-height: 62px;
+    }
+    .choice-btn:hover:not(:disabled) { border-color: rgba(34,211,238,.5); background: rgba(34,211,238,.07); transform: translateY(-1px); }
+    .choice-btn.correct { background: rgba(34,197,94,.13); border-color: rgba(34,197,94,.65); }
+    .choice-btn.wrong { background: rgba(239,68,68,.13); border-color: rgba(239,68,68,.65); }
+
+    .text-answer-wrap { margin-top: 24px; display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+    .text-answer-wrap input { font-size: 1.2rem; padding: 15px 18px; }
+
+    .feedback {
+      margin-top: 18px; border-radius: 16px; padding: 14px 16px; display: none;
+      border: 1px solid var(--line); line-height: 1.55;
+    }
+    .feedback.show { display: block; }
+    .feedback.success { color: #dcfce7; background: rgba(34,197,94,.10); border-color: rgba(34,197,94,.25); }
+    .feedback.error { color: #fee2e2; background: rgba(239,68,68,.10); border-color: rgba(239,68,68,.25); }
+    .feedback.info { color: #e0f2fe; background: rgba(14,165,233,.10); border-color: rgba(14,165,233,.25); }
+
+    .game-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); }
+    .timer { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    .topbar-actions { display: flex; align-items: center; gap: 10px; }
+    .btn-compact { padding: 9px 12px; font-size: .88rem; }
+    select, textarea {
+      width: 100%; border: 1px solid var(--line); background: rgba(3,7,18,.52);
+      color: white; border-radius: 13px; padding: 12px 14px; outline: none; font: inherit;
+    }
+    select:focus, textarea:focus { border-color: rgba(34,211,238,.75); box-shadow: 0 0 0 4px rgba(34,211,238,.08); }
+    textarea { resize: vertical; min-height: 86px; }
+    option { color: #111827; }
+    .btn-danger { color: white; background: rgba(239,68,68,.88); }
+
+    /* =========================================================
+       SECTION: SETTINGS
+    ========================================================== */
+    .settings-card {
+      border: 1px solid var(--line); background: linear-gradient(160deg, rgba(19,33,58,.96), rgba(10,20,36,.96));
+      box-shadow: var(--shadow); border-radius: var(--radius-xl); padding: clamp(20px, 3vw, 34px);
+    }
+    .settings-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 18px; margin-bottom: 20px; }
+    .settings-head h2 { margin: 5px 0 4px; font-size: clamp(1.55rem, 3vw, 2.3rem); }
+    .settings-head p { color: var(--muted); margin: 0; }
+    .settings-head-actions, .settings-actions { display: flex; flex-wrap: wrap; gap: 9px; }
+    .settings-layout { display: grid; grid-template-columns: minmax(250px, .72fr) minmax(0, 1.6fr); gap: 18px; align-items: start; }
+    .question-manager, .question-editor { border: 1px solid var(--line); border-radius: 20px; background: rgba(255,255,255,.035); }
+    .question-manager { overflow: hidden; position: sticky; top: 14px; }
+    .manager-toolbar { display: grid; grid-template-columns: 1fr 120px; gap: 8px; padding: 12px; border-bottom: 1px solid var(--line); }
+    .question-manager-list { max-height: 690px; overflow: auto; padding: 9px; }
+    .question-list-item { width: 100%; text-align: left; color: white; border: 1px solid transparent; background: transparent; border-radius: 13px; padding: 10px 11px; margin-bottom: 5px; }
+    .question-list-item:hover { background: rgba(255,255,255,.05); }
+    .question-list-item.active { background: rgba(124,58,237,.16); border-color: rgba(167,139,250,.25); }
+    .question-list-item strong { display: block; font-size: .9rem; }
+    .question-list-item small { display: block; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    .question-editor { padding: 18px; }
+    .editor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .editor-grid .full { grid-column: 1 / -1; }
+    .field-note { display: block; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+    .toggle-row { display: flex !important; align-items: center; gap: 9px; padding: 10px 0; cursor: pointer; }
+    .toggle-row input { width: auto; accent-color: var(--primary); }
+    .settings-actions { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+    .import-label { cursor: pointer; }
+    .settings-sync-note { color: var(--muted); font-size: .86rem; margin-top: 13px; line-height: 1.5; }
+    .choice-btn { display: flex; align-items: center; gap: 11px; }
+    .choice-label { flex: 0 0 32px; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; background: rgba(255,255,255,.07); font-weight: 700; color: #c4b5fd; }
+    .choice-text { flex: 1; }
+
+    /* =========================================================
+       SECTION: REPORT
+    ========================================================== */
+    .report-card { padding: clamp(22px, 4vw, 44px); }
+    .report-top { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; }
+    .score-orb {
+      width: 150px; height: 150px; border-radius: 50%; display: grid; place-items: center; text-align: center;
+      background: radial-gradient(circle at 35% 30%, rgba(34,211,238,.32), rgba(124,58,237,.26) 55%, rgba(255,255,255,.04));
+      border: 1px solid rgba(255,255,255,.12); box-shadow: inset 0 0 35px rgba(124,58,237,.12);
+    }
+    .score-orb b { font-size: 2.55rem; line-height: .95; }
+    .score-orb span { color: var(--muted); font-size: .82rem; }
+    .report-title { margin: 0; font-size: clamp(1.8rem, 4vw, 3rem); }
+    .report-subtitle { color: var(--muted); margin: 8px 0 0; }
+
+    .skill-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 13px; margin-top: 28px; }
+    .skill-card { padding: 16px; border-radius: 17px; background: rgba(255,255,255,.045); border: 1px solid var(--line); }
+    .skill-head { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 9px; }
+    .skill-head small { color: var(--muted); }
+    .mini-track { height: 8px; background: rgba(255,255,255,.07); border-radius: 999px; overflow: hidden; }
+    .mini-bar { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); border-radius: inherit; }
+
+    .insight-box { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
+    .insight { border-radius: 18px; padding: 18px; border: 1px solid var(--line); background: rgba(255,255,255,.04); }
+    .insight h3 { margin: 0 0 7px; font-size: 1rem; }
+    .insight p { margin: 0; color: var(--muted); line-height: 1.65; }
+    .report-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .report-credit { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); text-align: center; color: var(--muted); font-size: .9rem; }
+    .app-credit { margin-top: auto; padding: 22px 8px 0; text-align: center; color: var(--muted); font-size: .86rem; letter-spacing: .01em; }
+    .app-credit strong { color: #ddd6fe; font-weight: 500; }
+
+    .toast {
+      position: fixed; right: 18px; bottom: 18px; z-index: 999;
+      max-width: min(420px, calc(100% - 36px)); padding: 13px 16px;
+      border-radius: 15px; background: #111827; color: white;
+      border: 1px solid var(--line); box-shadow: var(--shadow);
+      transform: translateY(20px); opacity: 0; pointer-events: none; transition: .25s ease;
+    }
+    .toast.show { transform: none; opacity: 1; }
+
+    @media (max-width: 900px) {
+      .hero-card { grid-template-columns: 1fr; }
+      .game-layout, .settings-layout { grid-template-columns: 1fr; }
+      .question-manager { position: static; }
+      .side-panel { position: static; }
+      .stage-list { grid-template-columns: repeat(5, 1fr); }
+      .stage-item { display: block; text-align: center; padding: 5px; }
+      .stage-item div:last-child { display: none; }
+      .stage-no { margin: 0 auto; }
+      .game-card { min-height: auto; }
+    }
+
+    @media (max-width: 620px) {
+      .connection-pill span:last-child { display: none; }
+      .topbar-actions { gap: 6px; }
+      .btn-compact { padding: 9px; }
+      .form-grid, .choices, .skill-grid, .insight-box, .editor-grid { grid-template-columns: 1fr; }
+      .editor-grid .full { grid-column: auto; }
+      .settings-head { flex-direction: column; }
+      .manager-toolbar { grid-template-columns: 1fr; }
+      .report-top { grid-template-columns: 1fr; }
+      .score-orb { width: 125px; height: 125px; }
+      .text-answer-wrap { grid-template-columns: 1fr; }
+      .game-footer { align-items: flex-end; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">🎵</div>
+        <div>
+          <h1>RHYME QUEST</h1>
+          <small>ภารกิจพิชิตคำคล้องจอง</small>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button id="openSettingsButton" class="btn btn-secondary btn-compact" type="button" title="ตั้งค่าชุดคำถาม">⚙️ ตั้งค่า</button>
+        <div class="connection-pill" title="สถานะการเชื่อมต่อฐานข้อมูล">
+          <span id="connectionDot" class="dot"></span>
+          <span id="connectionText">โหมดทดลอง</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- =====================================================
+           SECTION: LOGIN SCREEN
+      ====================================================== -->
+      <section id="loginScreen" class="screen">
+        <div class="hero-card">
+          <div>
+            <div class="eyebrow">THAI LANGUAGE • M.1</div>
+            <h2 class="hero-title">เล่นกับเสียง<br><span>เรียนรู้สัมผัส</span></h2>
+            <p class="hero-copy">
+              เกมฝึกคำคล้องจอง 5 ด่าน ตั้งแต่การจำแนกเสียงสัมผัส การต่อห่วงคำ
+              ไปจนถึงการวิเคราะห์บทประพันธ์และสร้างคำสัมผัสด้วยตนเอง
+            </p>
+            <div class="feature-row">
+              <span class="feature-chip">🎯 5 ทักษะหลัก</span>
+              <span class="feature-chip">🔥 Combo & XP</span>
+              <span class="feature-chip">📊 รายงานรายบุคคล</span>
+              <span class="feature-chip">☁️ บันทึก Google Sheet</span>
+            </div>
+          </div>
+
+          <form id="loginForm" class="login-panel" autocomplete="off">
+            <h2>เข้าสู่ภารกิจ</h2>
+            <p>กรอกข้อมูลให้ครบเพื่อเริ่มบันทึกผลการเรียนรู้</p>
+            <div class="form-grid">
+              <div class="field full">
+                <label for="studentName">ชื่อ–นามสกุล</label>
+                <input id="studentName" name="studentName" placeholder="เช่น เด็กชายรักเรียน เพียรศึกษา" required maxlength="80" />
+              </div>
+              <div class="field">
+                <label for="studentClass">ชั้น</label>
+                <input id="studentClass" name="studentClass" placeholder="เช่น ม.1/1" required maxlength="20" />
+              </div>
+              <div class="field">
+                <label for="studentNumber">เลขที่</label>
+                <input id="studentNumber" name="studentNumber" type="number" min="1" max="99" placeholder="เช่น 12" required />
+              </div>
+              <div class="field full">
+                <label for="studentId">รหัสนักเรียน (ถ้ามี)</label>
+                <input id="studentId" name="studentId" placeholder="เว้นว่างได้" maxlength="40" />
+              </div>
+            </div>
+            <button class="btn btn-primary btn-block" type="submit">เริ่มเกม 🚀</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           SECTION: GAME SCREEN
+      ====================================================== -->
+      <section id="gameScreen" class="screen hidden">
+        <div class="game-layout">
+          <aside class="side-panel">
+            <div class="student-box">
+              <strong id="sideStudentName">-</strong>
+              <small id="sideStudentMeta">-</small>
+            </div>
+            <div class="stat-grid">
+              <div class="stat-box"><span>คะแนน</span><b id="scoreValue">0</b></div>
+              <div class="stat-box"><span>XP</span><b id="xpValue">0</b></div>
+              <div class="stat-box"><span>Combo</span><b id="comboValue">x0</b></div>
+              <div class="stat-box"><span>ถูกต้อง</span><b id="accuracyValue">0%</b></div>
+            </div>
+            <div id="stageList" class="stage-list"></div>
+          </aside>
+
+          <article class="game-card">
+            <div class="game-head">
+              <div id="stageBadge" class="stage-badge">ด่าน 1</div>
+              <div id="questionCount" class="question-count">ข้อ 1 / 15</div>
+            </div>
+            <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+
+            <div id="questionArea" class="question-area"></div>
+            <div id="feedback" class="feedback"></div>
+
+            <div class="game-footer">
+              <div id="timer" class="timer">⏱ 0.0 วินาที</div>
+              <button id="nextButton" class="btn btn-primary hidden" type="button">ข้อต่อไป →</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           SECTION: SETTINGS SCREEN
+           ตัวแก้ไขโจทย์สำหรับครู เก็บใน localStorage และซิงก์ GAS เมื่อเชื่อมต่อ
+      ====================================================== -->
+      <section id="settingsScreen" class="screen hidden">
+        <div class="settings-card">
+          <div class="settings-head">
+            <div>
+              <div class="eyebrow">TEACHER SETTINGS</div>
+              <h2>⚙️ ตั้งค่าชุดคำถาม</h2>
+              <p>เพิ่มข้อใหม่ แก้โจทย์ ตัวเลือก เฉลย และคลังคำตอบด่าน 5 ได้จากหน้านี้</p>
+            </div>
+            <div class="settings-head-actions">
+              <button id="backFromSettingsButton" class="btn btn-secondary" type="button">← กลับ</button>
+              <button id="addQuestionButton" class="btn btn-primary" type="button">＋ เพิ่มข้อ</button>
+            </div>
+          </div>
+
+          <div class="settings-layout">
+            <aside class="question-manager">
+              <div class="manager-toolbar">
+                <input id="questionSearch" type="search" placeholder="ค้นหาข้อคำถาม..." />
+                <select id="questionStageFilter">
+                  <option value="all">ทุกด่าน</option>
+                  <option value="1">ด่าน 1</option>
+                  <option value="2">ด่าน 2</option>
+                  <option value="3">ด่าน 3</option>
+                  <option value="4">ด่าน 4</option>
+                  <option value="5">ด่าน 5</option>
+                </select>
+              </div>
+              <div id="questionManagerList" class="question-manager-list"></div>
+            </aside>
+
+            <form id="questionEditorForm" class="question-editor" autocomplete="off">
+              <input id="editorQuestionId" type="hidden" />
+              <div class="editor-grid">
+                <div class="field">
+                  <label for="editorStage">ด่าน</label>
+                  <select id="editorStage" required>
+                    <option value="1">1 — รู้จักสัมผัส</option>
+                    <option value="2">2 — จับคู่สัมผัส</option>
+                    <option value="3">3 — ต่อห่วงคำ</option>
+                    <option value="4">4 — บทประพันธ์</option>
+                    <option value="5">5 — พิมพ์คำสัมผัส</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="editorType">รูปแบบข้อ</label>
+                  <select id="editorType" required>
+                    <option value="choice">ตัวเลือกทั่วไป</option>
+                    <option value="chain">ต่อห่วงคำ</option>
+                    <option value="poem-choice">วิเคราะห์บทประพันธ์</option>
+                    <option value="poem-repair">ซ่อมบทประพันธ์</option>
+                    <option value="text-rhyme">พิมพ์คำสัมผัส</option>
+                  </select>
+                </div>
+                <div class="field full">
+                  <label for="editorTitle">คำสั่ง / คำถาม</label>
+                  <input id="editorTitle" required placeholder="เช่น คำใดคล้องจองกับคำว่า" />
+                </div>
+                <div class="field full">
+                  <label for="editorPrompt">โจทย์ / คำตั้งต้น / คำอธิบายเสริม</label>
+                  <input id="editorPrompt" placeholder="เช่น ดาว" />
+                </div>
+                <div id="choicesField" class="field full editor-conditional">
+                  <label for="editorChoices">ตัวเลือก — 1 บรรทัดต่อ 1 ตัวเลือก</label>
+                  <textarea id="editorChoices" rows="5" placeholder="ดิน&#10;ขาว&#10;ลม&#10;ฟ้า"></textarea>
+                </div>
+                <div id="answerField" class="field full editor-conditional">
+                  <label for="editorAnswer">เฉลย</label>
+                  <input id="editorAnswer" placeholder="ต้องตรงกับหนึ่งในตัวเลือก" />
+                </div>
+                <div id="acceptedAnswersField" class="field full editor-conditional hidden">
+                  <label for="editorAcceptedAnswers">คลังคำตอบที่ยอมรับ — 1 คำต่อ 1 บรรทัด</label>
+                  <textarea id="editorAcceptedAnswers" rows="6" placeholder="ขาว&#10;ก้าว&#10;คราว"></textarea>
+                  <small class="field-note">ด่าน 5 ยังตรวจเสียงสัมผัสจากรูปสระแปลงอัตโนมัติ เช่น วัน–พรรณ และ ใจ–ชัย เพิ่มเติมจากรายการนี้</small>
+                </div>
+                <div id="chainField" class="field full editor-conditional hidden">
+                  <label for="editorChain">ห่วงคำเดิม — 1 กลุ่มคำต่อ 1 บรรทัด</label>
+                  <textarea id="editorChain" rows="5" placeholder="เด็กไทย&#10;ใฝ่เรียน"></textarea>
+                </div>
+                <div id="poemField" class="field full editor-conditional hidden">
+                  <label for="editorPoem">บทประพันธ์ — 1 วรรคต่อ 1 บรรทัด</label>
+                  <textarea id="editorPoem" rows="7"></textarea>
+                </div>
+                <div class="field full">
+                  <label for="editorExplanation">คำอธิบายเฉลย</label>
+                  <textarea id="editorExplanation" rows="3" placeholder="อธิบายเหตุผลหลังตอบ"></textarea>
+                </div>
+                <label class="toggle-row field full">
+                  <input id="editorEnabled" type="checkbox" checked />
+                  <span>เปิดใช้ข้อนี้ในเกม</span>
+                </label>
+              </div>
+
+              <div class="settings-actions">
+                <button class="btn btn-primary" type="submit">💾 บันทึกข้อนี้</button>
+                <button id="deleteQuestionButton" class="btn btn-danger" type="button">ลบข้อ</button>
+                <button id="resetQuestionsButton" class="btn btn-secondary" type="button">คืนค่าโจทย์เริ่มต้น</button>
+                <button id="exportQuestionsButton" class="btn btn-secondary" type="button">ส่งออก JSON</button>
+                <label class="btn btn-secondary import-label">นำเข้า JSON<input id="importQuestionsInput" type="file" accept="application/json" hidden /></label>
+              </div>
+              <div id="settingsSyncNote" class="settings-sync-note"></div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================
+           SECTION: REPORT SCREEN
+      ====================================================== -->
+      <section id="reportScreen" class="screen hidden">
+        <div class="report-card">
+          <div class="report-top">
+            <div>
+              <div class="eyebrow">RHYME SKILL PROFILE</div>
+              <h2 id="reportTitle" class="report-title">ผลการฝึกคำคล้องจอง</h2>
+              <p id="reportSubtitle" class="report-subtitle"></p>
+            </div>
+            <div class="score-orb">
+              <div><b id="finalAccuracy">0%</b><br><span>ความแม่นยำรวม</span></div>
+            </div>
+          </div>
+
+          <div id="skillGrid" class="skill-grid"></div>
+
+          <div class="insight-box">
+            <div class="insight">
+              <h3>🌟 จุดเด่น</h3>
+              <p id="strengthText">-</p>
+            </div>
+            <div class="insight">
+              <h3>🧭 ควรพัฒนา</h3>
+              <p id="weaknessText">-</p>
+            </div>
+          </div>
+
+          <div class="report-credit">พัฒนาโดย ครูนนทพัทธ์ หิรัญเรือง</div>
+
+          <div class="report-actions" data-html2canvas-ignore="true">
+            <button id="playAgainButton" class="btn btn-primary" type="button">เล่นอีกครั้ง</button>
+            <button id="saveScoreImageButton" class="btn btn-secondary" type="button">📸 บันทึกภาพผลคะแนน</button>
+            <button id="downloadResultButton" class="btn btn-secondary" type="button">ดาวน์โหลดผล JSON</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-credit">พัฒนาโดย <strong>ครูนนทพัทธ์ หิรัญเรือง</strong></footer>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    "use strict";
+
+    /* =========================================================
+       SECTION: CONFIG
+       1) Deploy Code.gs เป็น Web App
+       2) นำ URL ที่ลงท้ายด้วย /exec มาแทนค่า GAS_WEB_APP_URL
+       หมายเหตุ: ใช้ no-cors เพื่อให้ GitHub Pages ส่งข้อมูลข้ามโดเมนได้
+    ========================================================== */
+    const CONFIG = {
+      APP_NAME: "Rhyme Quest",
+      VERSION: "1.2.0",
+      GAS_WEB_APP_URL: "https://script.google.com/macros/s/AKfycbykcZrrUPen8-VDk8ZQ9j_83shC5TsliZK1sPKJp5Nxr_Vr6H1Jf7pJhfkegNfMXETx/exec",
+      SHEET_ID: "1JiMN6yNrlibHcjqkM5f4IP9S0LBikf7ZHqGeRhK8WlI",
+      SHEET_NAME: "เก็บคะแนน",
+      XP_CORRECT: 10,
+      XP_SPEED_BONUS: 5,
+      SPEED_BONUS_MS: 7000,
+      XP_COMBO_BONUS: 10,
+      COMBO_THRESHOLD: 3,
+      QUESTION_STORAGE_KEY: "rhymeQuest:questionBank:v1",
+      QUESTION_EXPANSION_MIGRATION_KEY: "rhymeQuest:migration:expanded-10-questions:v1"
+    };
+
+    /* =========================================================
+       SECTION: SKILL DEFINITIONS
+    ========================================================== */
+    const SKILLS = {
+      RH01: { name: "จำแนกเสียงสัมผัส", short: "รู้จักสัมผัส", icon: "🎧" },
+      RH02: { name: "เชื่อมโยงคู่สัมผัส", short: "จับคู่สัมผัส", icon: "🧩" },
+      RH03: { name: "ส่ง–รับสัมผัสต่อเนื่อง", short: "ต่อห่วงคำ", icon: "🔗" },
+      RH04: { name: "วิเคราะห์สัมผัสในบทประพันธ์", short: "อ่านบทประพันธ์", icon: "📜" },
+      RH05: { name: "สร้างคำสัมผัสด้วยตนเอง", short: "สร้างสัมผัส", icon: "✍️" }
+    };
+
+    const STAGES = [
+      { stage: 1, skill: "RH01", title: "รู้จักสัมผัส", subtitle: "เลือกคำที่คล้องจอง", icon: "🎧" },
+      { stage: 2, skill: "RH02", title: "จับคู่สัมผัส", subtitle: "เชื่อมโยงคำที่สัมผัสกัน", icon: "🧩" },
+      { stage: 3, skill: "RH03", title: "ต่อห่วงคำ", subtitle: "ท้ายคำหน้า สัมผัสต้นคำหลัง", icon: "🔗" },
+      { stage: 4, skill: "RH04", title: "อ่านบทประพันธ์", subtitle: "ค้นหาและซ่อมสัมผัส", icon: "📜" },
+      { stage: 5, skill: "RH05", title: "นักสร้างสัมผัส", subtitle: "พิมพ์คำ 1 พยางค์", icon: "✍️" }
+    ];
+
+    /* =========================================================
+       SECTION: QUESTION BANK
+       แก้/เพิ่มคำถามได้จากบล็อกนี้โดยไม่กระทบ Game Engine
+    ========================================================== */
+    const DEFAULT_QUESTION_BANK = [
+      // ---------- ด่าน 1: รู้จักสัมผัส ----------
+      {
+        id: "S1Q1", stage: 1, skillCode: "RH01", type: "choice",
+        title: "คำใดคล้องจองกับคำว่า", prompt: "ดาว",
+        choices: ["ดิน", "ขาว", "ลม", "ฟ้า"], answer: "ขาว",
+        explanation: "“ดาว–ขาว” มีเสียงสระและเสียงตัวสะกดสัมผัสกัน"
+      },
+      {
+        id: "S1Q2", stage: 1, skillCode: "RH01", type: "choice",
+        title: "คำใดคล้องจองกับคำว่า", prompt: "ฝัน",
+        choices: ["วัน", "ฟ้า", "ใจ", "นอน"], answer: "วัน",
+        explanation: "“ฝัน–วัน” สัมผัสเสียงสระและมาตราตัวสะกดเดียวกัน"
+      },
+      {
+        id: "S1Q3", stage: 1, skillCode: "RH01", type: "choice",
+        title: "คำใดคล้องจองกับคำว่า", prompt: "ใจ",
+        choices: ["ดี", "ไกล", "มอง", "รัก"], answer: "ไกล",
+        explanation: "“ใจ–ไกล” มีเสียงสัมผัสสระเดียวกัน"
+      },
+
+      {
+        id: "S1Q4", stage: 1, skillCode: "RH01", type: "choice",
+        title: "คำใดคล้องจองกับคำว่า", prompt: "นอน",
+        choices: ["พร", "กิน", "ดาว", "ใจ"], answer: "พร",
+        explanation: "“นอน–พร” มีเสียงสระออและเสียงตัวสะกดมาตราแม่กนเหมือนกัน"
+      },
+      {
+        id: "S1Q5", stage: 1, skillCode: "RH01", type: "choice",
+        title: "คำใดคล้องจองกับคำว่า", prompt: "งาม",
+        choices: ["ลม", "ตาม", "คืน", "ไกล"], answer: "ตาม",
+        explanation: "“งาม–ตาม” มีเสียงสระอาและเสียงตัวสะกดมาตราแม่กมเหมือนกัน"
+      },
+      {
+        id: "S1Q6", stage: 1, skillCode: "RH01", type: "choice",
+        title: "คำใดคล้องจองกับคำว่า", prompt: "ดี",
+        choices: ["รัก", "บ้าน", "มี", "มอง"], answer: "มี",
+        explanation: "“ดี–มี” มีเสียงสระอีเหมือนกัน แม้เสียงวรรณยุกต์ต่างกันก็ยังคล้องจอง"
+      },
+      {
+        id: "S1Q7", stage: 1, skillCode: "RH01", type: "choice",
+        title: "คำใดคล้องจองกับคำว่า", prompt: "สุข",
+        choices: ["ใจ", "ทุกข์", "ฟ้า", "เรียน"], answer: "ทุกข์",
+        explanation: "“สุข–ทุกข์” มีเสียงสระและเสียงตัวสะกดเดียวกัน"
+      },
+      {
+        id: "S1Q8", stage: 1, skillCode: "RH01", type: "choice",
+        title: "คำใดคล้องจองกับคำว่า", prompt: "เพลง",
+        choices: ["ฝัน", "รัก", "เก่ง", "ดี"], answer: "เก่ง",
+        explanation: "“เพลง–เก่ง” มีเสียงสระเอและเสียงตัวสะกดมาตราแม่กงสอดคล้องกัน"
+      },
+      {
+        id: "S1Q9", stage: 1, skillCode: "RH01", type: "choice",
+        title: "คำใดคล้องจองกับคำว่า", prompt: "รัก",
+        choices: ["พัก", "คอย", "คืน", "เขา"], answer: "พัก",
+        explanation: "“รัก–พัก” มีเสียงสระอะและเสียงตัวสะกดมาตราแม่กกเหมือนกัน"
+      },
+      {
+        id: "S1Q10", stage: 1, skillCode: "RH01", type: "choice",
+        title: "คำใดคล้องจองกับคำว่า", prompt: "เรา",
+        choices: ["นอน", "เขา", "กิน", "ฝัน"], answer: "เขา",
+        explanation: "“เรา–เขา” มีเสียงสระเอาเหมือนกัน"
+      },
+
+      // ---------- ด่าน 2: จับคู่สัมผัส ----------
+      {
+        id: "S2Q1", stage: 2, skillCode: "RH02", type: "choice",
+        title: "คู่ใดเป็นคำคล้องจองกัน", prompt: "เลือกคู่สัมผัสที่ถูกต้อง",
+        choices: ["บ้าน – งาน", "บ้าน – ดิน", "บ้าน – ใจ", "บ้าน – ลม"], answer: "บ้าน – งาน",
+        explanation: "“บ้าน–งาน” มีเสียงสระและตัวสะกดในมาตราเดียวกัน"
+      },
+      {
+        id: "S2Q2", stage: 2, skillCode: "RH02", type: "choice",
+        title: "คู่ใดเป็นคำคล้องจองกัน", prompt: "เลือกคู่สัมผัสที่ถูกต้อง",
+        choices: ["เรียน – เขียน", "เรียน – ดาว", "เรียน – ฝัน", "เรียน – ฟ้า"], answer: "เรียน – เขียน",
+        explanation: "“เรียน–เขียน” เป็นคู่คำสัมผัสกัน"
+      },
+      {
+        id: "S2Q3", stage: 2, skillCode: "RH02", type: "choice",
+        title: "คู่ใดเป็นคำคล้องจองกัน", prompt: "เลือกคู่สัมผัสที่ถูกต้อง",
+        choices: ["อ่าน – สาน", "อ่าน – จด", "อ่าน – เขียน", "อ่าน – เรียน"], answer: "อ่าน – สาน",
+        explanation: "“อ่าน–สาน” มีเสียงสัมผัสสระและตัวสะกดสอดคล้องกัน"
+      },
+
+      {
+        id: "S2Q4", stage: 2, skillCode: "RH02", type: "choice",
+        title: "คู่ใดเป็นคำคล้องจองกัน", prompt: "เลือกคู่สัมผัสที่ถูกต้อง",
+        choices: ["มอง – ครอง", "มอง – ใจ", "มอง – ดี", "มอง – ฝัน"], answer: "มอง – ครอง",
+        explanation: "“มอง–ครอง” มีเสียงสระและเสียงตัวสะกดมาตราแม่กงเหมือนกัน"
+      },
+      {
+        id: "S2Q5", stage: 2, skillCode: "RH02", type: "choice",
+        title: "คู่ใดเป็นคำคล้องจองกัน", prompt: "เลือกคู่สัมผัสที่ถูกต้อง",
+        choices: ["ดี – บ้าน", "ดี – มี", "ดี – รัก", "ดี – ฝัน"], answer: "ดี – มี",
+        explanation: "“ดี–มี” เป็นคำสัมผัสสระเดียวกัน"
+      },
+      {
+        id: "S2Q6", stage: 2, skillCode: "RH02", type: "choice",
+        title: "คู่ใดเป็นคำคล้องจองกัน", prompt: "เลือกคู่สัมผัสที่ถูกต้อง",
+        choices: ["รัก – ใจ", "รัก – พัก", "รัก – ดาว", "รัก – คืน"], answer: "รัก – พัก",
+        explanation: "“รัก–พัก” มีเสียงสระอะและเสียงตัวสะกดมาตราแม่กกเหมือนกัน"
+      },
+      {
+        id: "S2Q7", stage: 2, skillCode: "RH02", type: "choice",
+        title: "คู่ใดเป็นคำคล้องจองกัน", prompt: "เลือกคู่สัมผัสที่ถูกต้อง",
+        choices: ["คืน – ดาว", "คืน – ฝัน", "คืน – ฝืน", "คืน – งาน"], answer: "คืน – ฝืน",
+        explanation: "“คืน–ฝืน” มีเสียงสระอือและเสียงตัวสะกดมาตราแม่กนเหมือนกัน"
+      },
+      {
+        id: "S2Q8", stage: 2, skillCode: "RH02", type: "choice",
+        title: "คู่ใดเป็นคำคล้องจองกัน", prompt: "เลือกคู่สัมผัสที่ถูกต้อง",
+        choices: ["ดาว – ขาว", "ดาว – ดิน", "ดาว – รัก", "ดาว – คืน"], answer: "ดาว – ขาว",
+        explanation: "“ดาว–ขาว” มีเสียงสระเอาเหมือนกัน"
+      },
+      {
+        id: "S2Q9", stage: 2, skillCode: "RH02", type: "choice",
+        title: "คู่ใดเป็นคำคล้องจองกัน", prompt: "เลือกคู่สัมผัสที่ถูกต้อง",
+        choices: ["สุข – ดี", "สุข – ทุกข์", "สุข – ใจ", "สุข – ดาว"], answer: "สุข – ทุกข์",
+        explanation: "“สุข–ทุกข์” มีเสียงท้ายเดียวกัน จึงเป็นคำสัมผัสกัน"
+      },
+      {
+        id: "S2Q10", stage: 2, skillCode: "RH02", type: "choice",
+        title: "คู่ใดเป็นคำคล้องจองกัน", prompt: "เลือกคู่สัมผัสที่ถูกต้อง",
+        choices: ["เรา – ฝัน", "เรา – เขา", "เรา – มอง", "เรา – เรียน"], answer: "เรา – เขา",
+        explanation: "“เรา–เขา” มีเสียงสระเอาเหมือนกัน"
+      },
+
+      // ---------- ด่าน 3: ต่อห่วงคำคล้องจอง ----------
+      {
+        id: "S3Q1", stage: 3, skillCode: "RH03", type: "chain",
+        title: "เลือกกลุ่มคำที่จะต่อห่วงได้ถูกต้อง",
+        chain: ["เด็กไทย"], prompt: "พยางค์ท้าย “ไทย” ต้องสัมผัสกับพยางค์แรกของกลุ่มคำถัดไป",
+        choices: ["ใฝ่เรียน", "ตั้งใจ", "อ่านเขียน", "ขยันเรียน"], answer: "ใฝ่เรียน",
+        explanation: "เด็กไทย → ใฝ่เรียน เพราะ “ไทย–ใฝ่” คล้องจองกัน"
+      },
+      {
+        id: "S3Q2", stage: 3, skillCode: "RH03", type: "chain",
+        title: "ต่อห่วงคำคล้องจองให้ถูกต้อง",
+        chain: ["เด็กไทย", "ใฝ่เรียน"], prompt: "พยางค์ท้าย “เรียน” ต้องสัมผัสกับพยางค์แรกของกลุ่มคำถัดไป",
+        choices: ["เขียนอ่าน", "รักเรียน", "อ่านเก่ง", "เพียรดี"], answer: "เขียนอ่าน",
+        explanation: "ใฝ่เรียน → เขียนอ่าน เพราะ “เรียน–เขียน” คล้องจองกัน"
+      },
+      {
+        id: "S3Q3", stage: 3, skillCode: "RH03", type: "chain",
+        title: "ต่อห่วงคำคล้องจองให้สมบูรณ์",
+        chain: ["เด็กไทย", "ใฝ่เรียน", "เขียนอ่าน"], prompt: "พยางค์ท้าย “อ่าน” ต้องสัมผัสกับพยางค์แรกของกลุ่มคำถัดไป",
+        choices: ["สานฝัน", "ใฝ่ดี", "เรียนรู้", "อ่านต่อ"], answer: "สานฝัน",
+        explanation: "เขียนอ่าน → สานฝัน เพราะ “อ่าน–สาน” คล้องจองกัน"
+      },
+
+      {
+        id: "S3Q4", stage: 3, skillCode: "RH03", type: "chain",
+        title: "ต่อห่วงคำคล้องจองให้สมบูรณ์",
+        chain: ["เด็กไทย", "ใฝ่เรียน", "เขียนอ่าน", "สานฝัน"], prompt: "พยางค์ท้าย “ฝัน” ต้องสัมผัสกับพยางค์แรกของกลุ่มคำถัดไป",
+        choices: ["ปันสุข", "สุขใจ", "เรียนดี", "อ่านเก่ง"], answer: "ปันสุข",
+        explanation: "สานฝัน → ปันสุข เพราะ “ฝัน–ปัน” คล้องจองกัน"
+      },
+      {
+        id: "S3Q5", stage: 3, skillCode: "RH03", type: "chain",
+        title: "ต่อห่วงคำคล้องจองให้ถูกต้อง",
+        chain: ["สานฝัน", "ปันสุข"], prompt: "พยางค์ท้าย “สุข” ต้องสัมผัสกับพยางค์แรกของกลุ่มคำถัดไป",
+        choices: ["ดีใจ", "ทุกวัน", "ฝันดี", "ใฝ่เรียน"], answer: "ทุกวัน",
+        explanation: "ปันสุข → ทุกวัน เพราะ “สุข–ทุก” มีเสียงสัมผัสเดียวกัน"
+      },
+      {
+        id: "S3Q6", stage: 3, skillCode: "RH03", type: "chain",
+        title: "ต่อห่วงคำคล้องจองให้ถูกต้อง",
+        chain: ["ปันสุข", "ทุกวัน"], prompt: "พยางค์ท้าย “วัน” ต้องสัมผัสกับพยางค์แรกของกลุ่มคำถัดไป",
+        choices: ["รักเรียน", "ฝันดี", "มีสุข", "สุขใจ"], answer: "ฝันดี",
+        explanation: "ทุกวัน → ฝันดี เพราะ “วัน–ฝัน” คล้องจองกัน"
+      },
+      {
+        id: "S3Q7", stage: 3, skillCode: "RH03", type: "chain",
+        title: "ต่อห่วงคำคล้องจองให้ถูกต้อง",
+        chain: ["ทุกวัน", "ฝันดี"], prompt: "พยางค์ท้าย “ดี” ต้องสัมผัสกับพยางค์แรกของกลุ่มคำถัดไป",
+        choices: ["มีค่า", "อ่านเก่ง", "ใฝ่ฝัน", "รักเรียน"], answer: "มีค่า",
+        explanation: "ฝันดี → มีค่า เพราะ “ดี–มี” คล้องจองกัน"
+      },
+      {
+        id: "S3Q8", stage: 3, skillCode: "RH03", type: "chain",
+        title: "ต่อห่วงคำคล้องจองให้ถูกต้อง",
+        chain: ["ฝันดี", "มีค่า"], prompt: "พยางค์ท้าย “ค่า” ต้องสัมผัสกับพยางค์แรกของกลุ่มคำถัดไป",
+        choices: ["พาเพียร", "เขียนอ่าน", "เรียนรู้", "สุขใจ"], answer: "พาเพียร",
+        explanation: "มีค่า → พาเพียร เพราะ “ค่า–พา” คล้องจองกัน"
+      },
+      {
+        id: "S3Q9", stage: 3, skillCode: "RH03", type: "chain",
+        title: "ต่อห่วงคำคล้องจองให้ถูกต้อง",
+        chain: ["มีค่า", "พาเพียร"], prompt: "พยางค์ท้าย “เพียร” ต้องสัมผัสกับพยางค์แรกของกลุ่มคำถัดไป",
+        choices: ["อ่านกลอน", "เขียนกลอน", "รักภาษา", "สอนใจ"], answer: "เขียนกลอน",
+        explanation: "พาเพียร → เขียนกลอน เพราะ “เพียร–เขียน” คล้องจองกัน"
+      },
+      {
+        id: "S3Q10", stage: 3, skillCode: "RH03", type: "chain",
+        title: "ต่อห่วงคำคล้องจองให้ถูกต้อง",
+        chain: ["พาเพียร", "เขียนกลอน"], prompt: "พยางค์ท้าย “กลอน” ต้องสัมผัสกับพยางค์แรกของกลุ่มคำถัดไป",
+        choices: ["สอนใจ", "ใฝ่ดี", "มีค่า", "พาสุข"], answer: "สอนใจ",
+        explanation: "เขียนกลอน → สอนใจ เพราะ “กลอน–สอน” คล้องจองกัน"
+      },
+
+      // ---------- ด่าน 4: สัมผัสในบทประพันธ์ ----------
+      {
+        id: "S4Q1", stage: 4, skillCode: "RH04", type: "poem-choice",
+        title: "คู่คำใดเป็นสัมผัสระหว่างวรรค",
+        poem: [
+          "วันนี้มีฝนปรอย",
+          "ฉันก็คอยเธอกลับคืน",
+          "ทุกวันฉันกล้ำกลืน",
+          "เห็นภาพฝันวันเก่าหลัง"
+        ],
+        choices: ["ปรอย – คอย", "ฝน – คืน", "ฉัน – กลืน", "ภาพ – หลัง"], answer: "ปรอย – คอย",
+        explanation: "คำสุดท้ายวรรคแรก “ปรอย” ส่งสัมผัสไปยัง “คอย” ในวรรคที่สอง"
+      },
+      {
+        id: "S4Q2", stage: 4, skillCode: "RH04", type: "poem-choice",
+        title: "คู่คำใดเป็นสัมผัสอีกคู่หนึ่งในบทประพันธ์",
+        poem: [
+          "วันนี้มีฝนปรอย",
+          "ฉันก็คอยเธอกลับคืน",
+          "ทุกวันฉันกล้ำกลืน",
+          "เห็นภาพฝันวันเก่าหลัง"
+        ],
+        choices: ["คืน – กลืน", "คอย – คืน", "วัน – ฝัน", "ปรอย – กลืน"], answer: "คืน – กลืน",
+        explanation: "คำสุดท้ายวรรคที่สอง “คืน” ส่งสัมผัสไปยังคำสุดท้ายวรรคที่สาม “กลืน”"
+      },
+      {
+        id: "S4Q3", stage: 4, skillCode: "RH04", type: "poem-repair",
+        title: "ซ่อมสัมผัสให้บทประพันธ์",
+        poem: [
+          "วันนี้มีฝนปรอย",
+          "ฉันก็___เธอกลับคืน",
+          "ทุกวันฉันกล้ำกลืน",
+          "เห็นภาพฝันวันเก่าหลัง"
+        ],
+        prompt: "คำใดควรเติมในช่องว่างเพื่อรับสัมผัสจากคำว่า “ปรอย”",
+        choices: ["รอ", "คอย", "มอง", "เห็น"], answer: "คอย",
+        explanation: "“ปรอย–คอย” เป็นคู่สัมผัสที่ถูกต้อง และคำว่า “คอย” เหมาะกับบริบทของประโยค"
+      },
+
+      // ---------- ด่าน 5: นักสร้างสัมผัส ----------
+      {
+        id: "S5Q1", stage: 5, skillCode: "RH05", type: "text-rhyme",
+        title: "พิมพ์คำ 1 พยางค์ที่คล้องจองกับ", prompt: "ดาว",
+        acceptedAnswers: ["ขาว", "ก้าว", "คราว", "ยาว", "ราว", "สาว", "หนาว", "พราว", "ชาว"],
+        answer: "ขาว / ก้าว / คราว / ยาว / ราว / สาว / หนาว / พราว / ชาว",
+        explanation: "คำตอบต้องเป็นคำ 1 พยางค์และอยู่ในกลุ่มเสียงสัมผัสเดียวกับ “ดาว”"
+      },
+      {
+        id: "S5Q2", stage: 5, skillCode: "RH05", type: "text-rhyme",
+        title: "พิมพ์คำ 1 พยางค์ที่คล้องจองกับ", prompt: "ฝัน",
+        acceptedAnswers: ["วัน", "กัน", "ฉัน", "มัน", "สัน", "ปัน", "ขัน", "ทัน", "พัน"],
+        answer: "วัน / กัน / ฉัน / มัน / สัน / ปัน / ขัน / ทัน / พัน",
+        explanation: "คำตอบต้องเป็นคำ 1 พยางค์และสัมผัสกับ “ฝัน”"
+      },
+      {
+        id: "S5Q3", stage: 5, skillCode: "RH05", type: "text-rhyme",
+        title: "พิมพ์คำ 1 พยางค์ที่คล้องจองกับ", prompt: "ใจ",
+        acceptedAnswers: ["ไกล", "ไป", "ใคร", "ใหม่", "ให้", "ไหม", "วัย", "ชัย", "ใน"],
+        answer: "ไกล / ไป / ใคร / ใหม่ / ให้ / ไหม / วัย / ชัย / ใน",
+        explanation: "คำตอบต้องเป็นคำ 1 พยางค์และสัมผัสกับ “ใจ”"
+      },
+      {
+        id: "S5Q4", stage: 5, skillCode: "RH05", type: "text-rhyme",
+        title: "พิมพ์คำ 1 พยางค์ที่คล้องจองกับ", prompt: "บ้าน",
+        acceptedAnswers: ["งาน", "อ่าน", "ผ่าน", "สาน", "หวาน", "ร้าน", "ด้าน", "นาน", "การ"],
+        answer: "งาน / อ่าน / ผ่าน / สาน / หวาน / ร้าน / ด้าน / นาน / การ",
+        explanation: "คำตอบต้องเป็นคำ 1 พยางค์ที่มีเสียงสระอาและเสียงตัวสะกดมาตราแม่กน"
+      },
+      {
+        id: "S5Q5", stage: 5, skillCode: "RH05", type: "text-rhyme",
+        title: "พิมพ์คำ 1 พยางค์ที่คล้องจองกับ", prompt: "เรียน",
+        acceptedAnswers: ["เขียน", "เพียร", "เวียน", "เซียน", "เลียน", "เทียน", "เปลี่ยน"],
+        answer: "เขียน / เพียร / เวียน / เซียน / เลียน / เทียน / เปลี่ยน",
+        explanation: "คำตอบต้องเป็นคำ 1 พยางค์และมีเสียงสัมผัสเดียวกับ “เรียน”"
+      },
+      {
+        id: "S5Q6", stage: 5, skillCode: "RH05", type: "text-rhyme",
+        title: "พิมพ์คำ 1 พยางค์ที่คล้องจองกับ", prompt: "รัก",
+        acceptedAnswers: ["พัก", "หนัก", "ชัก", "ปัก", "ทัก", "ลัก", "หัก", "จัก", "สัก"],
+        answer: "พัก / หนัก / ชัก / ปัก / ทัก / ลัก / หัก / จัก / สัก",
+        explanation: "คำตอบต้องเป็นคำ 1 พยางค์และสัมผัสกับ “รัก”"
+      },
+      {
+        id: "S5Q7", stage: 5, skillCode: "RH05", type: "text-rhyme",
+        title: "พิมพ์คำ 1 พยางค์ที่คล้องจองกับ", prompt: "ดี",
+        acceptedAnswers: ["มี", "สี", "ปี", "ที", "หนี", "ตี", "ขี่", "พี่", "ชี้"],
+        answer: "มี / สี / ปี / ที / หนี / ตี / ขี่ / พี่ / ชี้",
+        explanation: "คำตอบต้องเป็นคำ 1 พยางค์และมีเสียงสระอีเหมือน “ดี”"
+      },
+      {
+        id: "S5Q8", stage: 5, skillCode: "RH05", type: "text-rhyme",
+        title: "พิมพ์คำ 1 พยางค์ที่คล้องจองกับ", prompt: "มอง",
+        acceptedAnswers: ["ครอง", "กอง", "จอง", "ทอง", "น้อง", "ร้อง", "ห้อง", "ส่อง", "ต้อง"],
+        answer: "ครอง / กอง / จอง / ทอง / น้อง / ร้อง / ห้อง / ส่อง / ต้อง",
+        explanation: "คำตอบต้องเป็นคำ 1 พยางค์และสัมผัสกับ “มอง”"
+      },
+      {
+        id: "S5Q9", stage: 5, skillCode: "RH05", type: "text-rhyme",
+        title: "พิมพ์คำ 1 พยางค์ที่คล้องจองกับ", prompt: "คืน",
+        acceptedAnswers: ["กลืน", "ฝืน", "ยืน", "ชื่น", "รื่น", "ตื่น", "อื่น"],
+        answer: "กลืน / ฝืน / ยืน / ชื่น / รื่น / ตื่น / อื่น",
+        explanation: "คำตอบต้องเป็นคำ 1 พยางค์และมีเสียงสระอือกับตัวสะกดมาตราแม่กนเหมือน “คืน”"
+      },
+      {
+        id: "S5Q10", stage: 5, skillCode: "RH05", type: "text-rhyme",
+        title: "พิมพ์คำ 1 พยางค์ที่คล้องจองกับ", prompt: "เรา",
+        acceptedAnswers: ["เขา", "เงา", "เบา", "เมา", "เตา", "เสา", "เหงา", "เผา", "เกา"],
+        answer: "เขา / เงา / เบา / เมา / เตา / เสา / เหงา / เผา / เกา",
+        explanation: "คำตอบต้องเป็นคำ 1 พยางค์และมีเสียงสระเอาเหมือน “เรา”"
+      }
+    ];
+
+    // ชุดคำถามต้นฉบับแก้ไขได้จากหน้า Settings โดยไม่แก้ Game Engine
+    let questionBankSource = structuredCloneSafe(DEFAULT_QUESTION_BANK);
+    let QUESTION_BANK = [];
+    let settingsPreviousScreen = null;
+
+    /* =========================================================
+       SECTION: APP STATE
+    ========================================================== */
+    const state = {
+      student: null,
+      sessionId: "",
+      startedAt: null,
+      endedAt: null,
+      currentIndex: 0,
+      questionStartedAt: 0,
+      timerInterval: null,
+      score: 0,
+      xp: 0,
+      combo: 0,
+      correctCount: 0,
+      answeredCount: 0,
+      locked: false,
+      responses: []
+    };
+
+    /* =========================================================
+       SECTION: DOM REFERENCES
+    ========================================================== */
+    const $ = (selector) => document.querySelector(selector);
+    const els = {
+      loginScreen: $("#loginScreen"),
+      gameScreen: $("#gameScreen"),
+      reportScreen: $("#reportScreen"),
+      settingsScreen: $("#settingsScreen"),
+      loginForm: $("#loginForm"),
+      sideStudentName: $("#sideStudentName"),
+      sideStudentMeta: $("#sideStudentMeta"),
+      scoreValue: $("#scoreValue"),
+      xpValue: $("#xpValue"),
+      comboValue: $("#comboValue"),
+      accuracyValue: $("#accuracyValue"),
+      stageList: $("#stageList"),
+      stageBadge: $("#stageBadge"),
+      questionCount: $("#questionCount"),
+      progressBar: $("#progressBar"),
+      questionArea: $("#questionArea"),
+      feedback: $("#feedback"),
+      timer: $("#timer"),
+      nextButton: $("#nextButton"),
+      connectionDot: $("#connectionDot"),
+      connectionText: $("#connectionText"),
+      reportTitle: $("#reportTitle"),
+      reportSubtitle: $("#reportSubtitle"),
+      finalAccuracy: $("#finalAccuracy"),
+      skillGrid: $("#skillGrid"),
+      strengthText: $("#strengthText"),
+      weaknessText: $("#weaknessText"),
+      playAgainButton: $("#playAgainButton"),
+      saveScoreImageButton: $("#saveScoreImageButton"),
+      downloadResultButton: $("#downloadResultButton"),
+      openSettingsButton: $("#openSettingsButton"),
+      backFromSettingsButton: $("#backFromSettingsButton"),
+      addQuestionButton: $("#addQuestionButton"),
+      questionSearch: $("#questionSearch"),
+      questionStageFilter: $("#questionStageFilter"),
+      questionManagerList: $("#questionManagerList"),
+      questionEditorForm: $("#questionEditorForm"),
+      editorQuestionId: $("#editorQuestionId"),
+      editorStage: $("#editorStage"),
+      editorType: $("#editorType"),
+      editorTitle: $("#editorTitle"),
+      editorPrompt: $("#editorPrompt"),
+      editorChoices: $("#editorChoices"),
+      editorAnswer: $("#editorAnswer"),
+      editorAcceptedAnswers: $("#editorAcceptedAnswers"),
+      editorChain: $("#editorChain"),
+      editorPoem: $("#editorPoem"),
+      editorExplanation: $("#editorExplanation"),
+      editorEnabled: $("#editorEnabled"),
+      choicesField: $("#choicesField"),
+      answerField: $("#answerField"),
+      acceptedAnswersField: $("#acceptedAnswersField"),
+      chainField: $("#chainField"),
+      poemField: $("#poemField"),
+      deleteQuestionButton: $("#deleteQuestionButton"),
+      resetQuestionsButton: $("#resetQuestionsButton"),
+      exportQuestionsButton: $("#exportQuestionsButton"),
+      importQuestionsInput: $("#importQuestionsInput"),
+      settingsSyncNote: $("#settingsSyncNote"),
+      toast: $("#toast")
+    };
+
+    /* =========================================================
+       SECTION: HELPERS
+    ========================================================== */
+    function createSessionId() {
+      return `RQ-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    }
+
+    function structuredCloneSafe(value) {
+      return typeof structuredClone === "function"
+        ? structuredClone(value)
+        : JSON.parse(JSON.stringify(value));
+    }
+
+    function normalizeThaiText(value) {
+      return String(value || "").normalize("NFC").trim().replace(/\s+/g, "");
+    }
+
+    function cleanThaiSoundText(value) {
+      return normalizeThaiText(value)
+        .replace(/[่้๊๋]/g, "")
+        .replace(/์/g, "");
+    }
+
+    const THAI_FINAL_CLASS = {
+      ก: "K", ข: "K", ค: "K", ฆ: "K",
+      จ: "T", ช: "T", ซ: "T", ฎ: "T", ฏ: "T", ฐ: "T", ฑ: "T", ฒ: "T", ด: "T", ต: "T", ถ: "T", ท: "T", ธ: "T", ศ: "T", ษ: "T", ส: "T",
+      บ: "P", ป: "P", พ: "P", ฟ: "P", ภ: "P",
+      น: "N", ณ: "N", ญ: "N", ร: "N", ล: "N", ฬ: "N",
+      ง: "NG", ม: "M", ย: "Y", ว: "W"
+    };
+
+    function getFinalClass(char) {
+      return THAI_FINAL_CLASS[char] || "OPEN";
+    }
+
+    // ตัวตรวจเสียงสัมผัสสำหรับด่าน 5 เน้นรูปเขียนต่างกันแต่เสียงสัมผัสเดียวกัน
+    // เช่น วัน/ฝัน/พรรณ -> A_SHORT:N และ ใจ/ไกล/ชัย/วัย -> AI:OPEN
+    function getThaiRhymeKey(rawWord) {
+      const word = cleanThaiSoundText(rawWord);
+      if (!word || !/^[ก-๙]+$/.test(word)) return "";
+
+      // ใ-/ไ- และ -ัย เป็นเสียง /ไอ/ เหมือนกันในตำแหน่งสัมผัส
+      if (/^[ใไ]/.test(word) || /ัย$/.test(word)) return "AI:OPEN";
+
+      // รร ทำหน้าที่แทนสระอะในคำจำนวนมาก เช่น พรรณ / พัน, ธรรม / ทำ(เฉพาะส่วนเสียงสั้น+ตัวสะกด)
+      const roHanMatch = word.match(/รร([ก-ฮ])$/);
+      if (roHanMatch) return `A_SHORT:${getFinalClass(roHanMatch[1])}`;
+      if (/รร$/.test(word)) return "A_SHORT:N";
+
+      // สระอะลดรูป -ั + ตัวสะกด เช่น วัน ฝัน พัน
+      const shortAMatch = word.match(/ั([ก-ฮ])$/);
+      if (shortAMatch && shortAMatch[1] !== "ย") return `A_SHORT:${getFinalClass(shortAMatch[1])}`;
+
+      // รูปสระที่ใช้บ่อยในคลังคำของเกม
+      const patterns = [
+        [/า([ก-ฮ])$/, "A_LONG"],
+        [/ำ$/, "AM"],
+        [/เ.+ีย([ก-ฮ])$/, "IA"],
+        [/เ.+ือ([ก-ฮ])$/, "UEA"],
+        [/ัว([ก-ฮ])$/, "UA"],
+        [/([ิีึืุู])([ก-ฮ])$/, "MARKED"]
+      ];
+      for (const [regex, vowel] of patterns) {
+        const match = word.match(regex);
+        if (match) {
+          const finalChar = match[match.length - 1];
+          const mark = vowel === "MARKED" ? match[1] : vowel;
+          return `${mark}:${getFinalClass(finalChar)}`;
+        }
+      }
+
+      // รูปสระเอา เช่น เรา เขา เงา
+      if (/^เ.+า$/.test(word)) return "AO:OPEN";
+
+      // สระออ + ตัวสะกด เช่น มอง ครอง นอน
+      const oLongMatch = word.match(/อ([ก-ฮ])$/);
+      if (oLongMatch) return `O_LONG:${getFinalClass(oLongMatch[1])}`;
+
+      // สระเปิดที่พบบ่อย
+      if (/า$/.test(word)) return "A_LONG:OPEN";
+      if (/ี$/.test(word)) return "I_LONG:OPEN";
+      if (/ู$/.test(word)) return "U_LONG:OPEN";
+      return "";
+    }
+
+    function isLikelySingleThaiSyllable(rawWord) {
+      const word = normalizeThaiText(rawWord);
+      if (!word || !/^[ก-๙]+$/.test(word)) return false;
+      const clean = cleanThaiSoundText(word);
+      let nuclei = 0;
+      nuclei += (clean.match(/[เแโใไ]/g) || []).length;
+      nuclei += (clean.match(/ำ/g) || []).length;
+      nuclei += (clean.match(/รร/g) || []).length;
+      const withoutRoHan = clean.replace(/รร/g, "");
+      nuclei += (withoutRoHan.match(/[ะาิีึืุูั]/g) || []).length;
+      // รูปประสมหนึ่งพยางค์อาจมีเครื่องหมายมากกว่าหนึ่งตัว จึงยอมรับไม่เกิน 2 nuclei
+      return nuclei <= 2;
+    }
+
+    function areThaiRhymes(wordA, wordB) {
+      const a = normalizeThaiText(wordA);
+      const b = normalizeThaiText(wordB);
+      if (!a || !b || a === b) return false;
+      const keyA = getThaiRhymeKey(a);
+      const keyB = getThaiRhymeKey(b);
+      return Boolean(keyA && keyB && keyA === keyB);
+    }
+
+    function prepareQuestionBankForPlay(source) {
+      const active = structuredCloneSafe(source)
+        .map((q, sourceIndex) => ({ ...q, __sourceIndex: sourceIndex }))
+        .filter(q => q.enabled !== false)
+        .sort((a, b) => (Number(a.stage) - Number(b.stage)) || (a.__sourceIndex - b.__sourceIndex))
+        .map(({ __sourceIndex, ...q }) => q);
+      let choiceOrdinal = Math.floor(Math.random() * 4);
+      active.forEach(q => {
+        if (!Array.isArray(q.choices) || !q.choices.length || !q.answer || !q.choices.includes(q.answer)) return;
+        const others = q.choices.filter(choice => choice !== q.answer);
+        // สลับตัวลวงก่อน แล้ววางเฉลยวน ก-ข-ค-ง ให้สมดุลทั้งชุด
+        for (let i = others.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [others[i], others[j]] = [others[j], others[i]];
+        }
+        const targetIndex = choiceOrdinal % q.choices.length;
+        choiceOrdinal += 1;
+        others.splice(targetIndex, 0, q.answer);
+        q.choices = others;
+      });
+      return active;
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function showToast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => els.toast.classList.remove("show"), 2800);
+    }
+
+    function switchScreen(screen) {
+      [els.loginScreen, els.gameScreen, els.reportScreen, els.settingsScreen].forEach(el => el.classList.add("hidden"));
+      screen.classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function getAccuracy() {
+      return state.answeredCount ? Math.round((state.correctCount / state.answeredCount) * 100) : 0;
+    }
+
+    function getCurrentQuestion() {
+      return QUESTION_BANK[state.currentIndex];
+    }
+
+    function isApiConfigured() {
+      return /^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(CONFIG.GAS_WEB_APP_URL);
+    }
+
+    function setConnectionStatus() {
+      if (isApiConfigured()) {
+        els.connectionDot.classList.add("online");
+        els.connectionText.textContent = "เชื่อม GAS แล้ว";
+      } else {
+        els.connectionDot.classList.remove("online");
+        els.connectionText.textContent = "โหมดทดลอง";
+      }
+    }
+
+    function formatDateTime(date) {
+      return new Intl.DateTimeFormat("th-TH", {
+        dateStyle: "medium", timeStyle: "short"
+      }).format(date);
+    }
+
+    /* =========================================================
+       SECTION: GAME START / RESET
+    ========================================================== */
+    function startGame(student) {
+      QUESTION_BANK = prepareQuestionBankForPlay(questionBankSource);
+      if (!QUESTION_BANK.length) {
+        showToast("ยังไม่มีข้อคำถามที่เปิดใช้งาน กรุณาเพิ่มโจทย์ในหน้าตั้งค่า");
+        return;
+      }
+      Object.assign(state, {
+        student,
+        sessionId: createSessionId(),
+        startedAt: new Date(),
+        endedAt: null,
+        currentIndex: 0,
+        questionStartedAt: 0,
+        score: 0,
+        xp: 0,
+        combo: 0,
+        correctCount: 0,
+        answeredCount: 0,
+        locked: false,
+        responses: []
+      });
+
+      els.sideStudentName.textContent = student.name;
+      els.sideStudentMeta.textContent = `${student.className} • เลขที่ ${student.number}`;
+      buildStageList();
+      updateStats();
+      switchScreen(els.gameScreen);
+      renderQuestion();
+    }
+
+    function resetToLogin() {
+      clearInterval(state.timerInterval);
+      els.loginForm.reset();
+      switchScreen(els.loginScreen);
+    }
+
+    /* =========================================================
+       SECTION: STAGE NAVIGATION UI
+    ========================================================== */
+    function buildStageList() {
+      els.stageList.innerHTML = STAGES.map(stage => `
+        <div class="stage-item" data-stage="${stage.stage}">
+          <div class="stage-no">${stage.stage}</div>
+          <div><strong>${stage.icon} ${stage.title}</strong><small>${stage.subtitle}</small></div>
+        </div>
+      `).join("");
+      updateStageList();
+    }
+
+    function updateStageList() {
+      const currentStage = getCurrentQuestion()?.stage || 5;
+      els.stageList.querySelectorAll(".stage-item").forEach(item => {
+        const stageNo = Number(item.dataset.stage);
+        item.classList.toggle("active", stageNo === currentStage);
+        item.classList.toggle("done", stageNo < currentStage);
+      });
+    }
+
+    /* =========================================================
+       SECTION: QUESTION RENDERER
+    ========================================================== */
+    function renderQuestion() {
+      state.locked = false;
+      clearInterval(state.timerInterval);
+      clearFeedback();
+      els.nextButton.classList.add("hidden");
+
+      const q = getCurrentQuestion();
+      if (!q) return finishGame();
+
+      const stage = STAGES.find(item => item.stage === q.stage);
+      els.stageBadge.textContent = `${stage.icon} ด่าน ${stage.stage}: ${stage.title}`;
+      els.questionCount.textContent = `ข้อ ${state.currentIndex + 1} / ${QUESTION_BANK.length}`;
+      els.progressBar.style.width = `${(state.currentIndex / QUESTION_BANK.length) * 100}%`;
+      updateStageList();
+
+      if (q.type === "choice") renderChoiceQuestion(q);
+      if (q.type === "chain") renderChainQuestion(q);
+      if (q.type === "poem-choice" || q.type === "poem-repair") renderPoemQuestion(q);
+      if (q.type === "text-rhyme") renderTextRhymeQuestion(q);
+
+      state.questionStartedAt = performance.now();
+      startTimer();
+    }
+
+    function renderChoiceQuestion(q) {
+      els.questionArea.innerHTML = `
+        <div class="question-icon">${SKILLS[q.skillCode].icon}</div>
+        <h2 class="question-title">${escapeHTML(q.title)}</h2>
+        <div class="prompt-word">${escapeHTML(q.prompt)}</div>
+        ${renderChoiceButtons(q)}
+      `;
+      bindChoiceButtons(q);
+    }
+
+    function renderChainQuestion(q) {
+      els.questionArea.innerHTML = `
+        <div class="question-icon">🔗</div>
+        <h2 class="question-title">${escapeHTML(q.title)}</h2>
+        <p class="question-hint">${escapeHTML(q.prompt)}</p>
+        <div class="chain-box">
+          <div class="chain-line">
+            ${q.chain.map((word, index) => `
+              ${index ? '<span class="chain-arrow">→</span>' : ''}
+              <span class="chain-node">${escapeHTML(word)}</span>
+            `).join("")}
+            <span class="chain-arrow">→</span>
+            <span class="chain-node">?</span>
+          </div>
+        </div>
+        ${renderChoiceButtons(q)}
+      `;
+      bindChoiceButtons(q);
+    }
+
+    function renderPoemQuestion(q) {
+      els.questionArea.innerHTML = `
+        <div class="question-icon">📜</div>
+        <h2 class="question-title">${escapeHTML(q.title)}</h2>
+        ${q.prompt ? `<p class="question-hint">${escapeHTML(q.prompt)}</p>` : ""}
+        <div class="poem-box">${q.poem.map(line => `<div>${escapeHTML(line)}</div>`).join("")}</div>
+        ${renderChoiceButtons(q)}
+      `;
+      bindChoiceButtons(q);
+    }
+
+    function renderTextRhymeQuestion(q) {
+      els.questionArea.innerHTML = `
+        <div class="question-icon">✍️</div>
+        <h2 class="question-title">${escapeHTML(q.title)}</h2>
+        <div class="prompt-word">${escapeHTML(q.prompt)}</div>
+        <p class="question-hint">กติกา: พิมพ์คำไทย 1 พยางค์ ระบบตรวจทั้งคลังคำตอบและรูปสระแปลงที่ออกเสียงสัมผัสกัน เช่น วัน–พรรณ และ ใจ–ชัย</p>
+        <div class="text-answer-wrap">
+          <input id="textAnswer" type="text" maxlength="20" placeholder="พิมพ์คำตอบ เช่น ขาว" autocomplete="off" />
+          <button id="submitTextAnswer" class="btn btn-primary" type="button">ส่งคำตอบ</button>
+        </div>
+      `;
+      const input = $("#textAnswer");
+      const submit = $("#submitTextAnswer");
+      submit.addEventListener("click", () => submitTextAnswer(q, input.value));
+      input.addEventListener("keydown", event => {
+        if (event.key === "Enter") submitTextAnswer(q, input.value);
+      });
+      setTimeout(() => input.focus(), 50);
+    }
+
+    function renderChoiceButtons(q) {
+      const labels = ["ก", "ข", "ค", "ง", "จ", "ฉ"];
+      return `<div class="choices">${q.choices.map((choice, index) => `
+        <button class="choice-btn" type="button" data-choice-index="${index}">
+          <span class="choice-label">${labels[index] || index + 1}</span>
+          <span class="choice-text">${escapeHTML(choice)}</span>
+        </button>
+      `).join("")}</div>`;
+    }
+
+    function bindChoiceButtons(q) {
+      els.questionArea.querySelectorAll(".choice-btn").forEach(button => {
+        button.addEventListener("click", () => {
+          const answer = q.choices[Number(button.dataset.choiceIndex)];
+          submitChoiceAnswer(q, answer, button);
+        });
+      });
+    }
+
+    /* =========================================================
+       SECTION: ANSWER VALIDATION
+    ========================================================== */
+    function submitChoiceAnswer(q, answer, clickedButton) {
+      if (state.locked) return;
+      state.locked = true;
+      const isCorrect = answer === q.answer;
+
+      els.questionArea.querySelectorAll(".choice-btn").forEach(button => {
+        button.disabled = true;
+        const choice = q.choices[Number(button.dataset.choiceIndex)];
+        if (choice === q.answer) button.classList.add("correct");
+      });
+      if (!isCorrect) clickedButton.classList.add("wrong");
+
+      completeAnswer(q, answer, isCorrect, q.answer);
+    }
+
+    function submitTextAnswer(q, rawAnswer) {
+      if (state.locked) return;
+      const answer = normalizeThaiText(rawAnswer);
+      const input = $("#textAnswer");
+      const submit = $("#submitTextAnswer");
+
+      if (!answer) {
+        showFeedback("info", "กรุณาพิมพ์คำตอบก่อนส่ง");
+        input.focus();
+        return;
+      }
+
+      // บังคับรูปแบบเบื้องต้น: ไม่รับช่องว่าง ตัวเลข หรือเครื่องหมายเชื่อมคำ
+      if (/\s|\d|[-_/]/.test(String(rawAnswer).trim())) {
+        showFeedback("error", "ด่านนี้รับเฉพาะคำ 1 พยางค์เพียงคำเดียว ไม่เว้นวรรคหรือเชื่อมหลายคำ");
+        input.focus();
+        return;
+      }
+
+      state.locked = true;
+      input.disabled = true;
+      submit.disabled = true;
+
+      const acceptedAnswers = Array.isArray(q.acceptedAnswers) ? q.acceptedAnswers.map(normalizeThaiText) : [];
+      const explicitMatch = acceptedAnswers.includes(answer);
+      const transformedVowelMatch = isLikelySingleThaiSyllable(answer) && areThaiRhymes(q.prompt, answer);
+      const isCorrect = explicitMatch || transformedVowelMatch;
+      const correctDisplay = transformedVowelMatch && !explicitMatch
+        ? `${q.answer} (และคำ 1 พยางค์ที่มีเสียงสัมผัสเดียวกัน)`
+        : q.answer;
+      completeAnswer(q, answer, isCorrect, correctDisplay);
+    }
+
+    /* =========================================================
+       SECTION: SCORING & RESPONSE LOG
+    ========================================================== */
+    function completeAnswer(q, studentAnswer, isCorrect, correctAnswer) {
+      clearInterval(state.timerInterval);
+      const responseTimeMs = Math.round(performance.now() - state.questionStartedAt);
+
+      state.answeredCount += 1;
+      let earnedScore = 0;
+      let earnedXp = 0;
+
+      if (isCorrect) {
+        state.correctCount += 1;
+        state.combo += 1;
+        earnedScore = 10;
+        earnedXp += CONFIG.XP_CORRECT;
+        if (responseTimeMs <= CONFIG.SPEED_BONUS_MS) earnedXp += CONFIG.XP_SPEED_BONUS;
+        if (state.combo > 0 && state.combo % CONFIG.COMBO_THRESHOLD === 0) earnedXp += CONFIG.XP_COMBO_BONUS;
+        state.score += earnedScore;
+        state.xp += earnedXp;
+        showFeedback("success", `✅ ถูกต้อง! ${q.explanation} ${earnedXp ? `(+${earnedXp} XP)` : ""}`);
+      } else {
+        state.combo = 0;
+        showFeedback("error", `❌ ยังไม่ถูก คำตอบที่ระบบยอมรับคือ “${correctAnswer}” — ${q.explanation}`);
+      }
+
+      state.responses.push({
+        questionId: q.id,
+        stage: q.stage,
+        skillCode: q.skillCode,
+        type: q.type,
+        prompt: q.prompt || q.title,
+        studentAnswer,
+        correctAnswer,
+        isCorrect,
+        responseTimeMs,
+        score: earnedScore,
+        xp: earnedXp,
+        answeredAt: new Date().toISOString()
+      });
+
+      updateStats();
+      els.nextButton.textContent = state.currentIndex === QUESTION_BANK.length - 1 ? "ดูผลการฝึก →" : "ข้อต่อไป →";
+      els.nextButton.classList.remove("hidden");
+    }
+
+    function updateStats() {
+      els.scoreValue.textContent = state.score;
+      els.xpValue.textContent = state.xp;
+      els.comboValue.textContent = `x${state.combo}`;
+      els.accuracyValue.textContent = `${getAccuracy()}%`;
+    }
+
+    function startTimer() {
+      clearInterval(state.timerInterval);
+      const tick = () => {
+        const seconds = Math.max(0, (performance.now() - state.questionStartedAt) / 1000);
+        els.timer.textContent = `⏱ ${seconds.toFixed(1)} วินาที`;
+      };
+      tick();
+      state.timerInterval = setInterval(tick, 100);
+    }
+
+    function showFeedback(type, message) {
+      els.feedback.className = `feedback show ${type}`;
+      els.feedback.textContent = message;
+    }
+
+    function clearFeedback() {
+      els.feedback.className = "feedback";
+      els.feedback.textContent = "";
+    }
+
+    /* =========================================================
+       SECTION: SKILL REPORT ENGINE
+    ========================================================== */
+    function calculateSkillReport() {
+      return Object.entries(SKILLS).map(([skillCode, meta]) => {
+        const items = state.responses.filter(item => item.skillCode === skillCode);
+        const correct = items.filter(item => item.isCorrect).length;
+        const accuracy = items.length ? Math.round((correct / items.length) * 100) : 0;
+        const avgResponseTimeMs = items.length
+          ? Math.round(items.reduce((sum, item) => sum + item.responseTimeMs, 0) / items.length)
+          : 0;
+        return { skillCode, ...meta, total: items.length, correct, accuracy, avgResponseTimeMs };
+      });
+    }
+
+    function buildRecommendation(skillReport) {
+      const sorted = [...skillReport].sort((a, b) => b.accuracy - a.accuracy);
+      const strongest = sorted[0];
+      const weakest = sorted[sorted.length - 1];
+
+      const strength = strongest.accuracy >= 80
+        ? `ทำได้ดีด้าน “${strongest.name}” ด้วยความแม่นยำ ${strongest.accuracy}% แสดงว่าสามารถจับความสัมพันธ์ของเสียงสัมผัสในทักษะนี้ได้ดี`
+        : `ทักษะที่ทำได้ดีที่สุดในรอบนี้คือ “${strongest.name}” (${strongest.accuracy}%) ควรฝึกต่อเนื่องเพื่อเพิ่มความแม่นยำ`;
+
+      const adviceMap = {
+        RH01: "ฝึกฟังและเปรียบเทียบเสียงสระ รวมถึงมาตราตัวสะกดของคำทีละคู่",
+        RH02: "ฝึกจับคู่คำสัมผัสหลายชุดและอธิบายว่าเสียงส่วนใดทำให้คำคล้องจองกัน",
+        RH03: "ฝึกสังเกตพยางค์ท้ายของกลุ่มคำแรก แล้วหากลุ่มคำใหม่ที่พยางค์แรกสามารถรับสัมผัสได้",
+        RH04: "ฝึกขีดเส้นโยงคำส่งสัมผัสและคำรับสัมผัสในบทประพันธ์สั้น ๆ ก่อนวิเคราะห์ฉันทลักษณ์",
+        RH05: "ฝึกสร้างคลังคำ 1 พยางค์แยกตามกลุ่มเสียงสัมผัส แล้วนำมาแข่งขันคิดคำให้ได้หลายคำ"
+      };
+
+      const weakness = `ควรพัฒนา “${weakest.name}” ซึ่งได้ ${weakest.accuracy}% โดย${adviceMap[weakest.skillCode]}`;
+      return { strongest, weakest, strength, weakness };
+    }
+
+    /* =========================================================
+       SECTION: FINISH GAME & REPORT UI
+    ========================================================== */
+    async function finishGame() {
+      clearInterval(state.timerInterval);
+      state.endedAt = new Date();
+      els.progressBar.style.width = "100%";
+
+      const skillReport = calculateSkillReport();
+      const recommendation = buildRecommendation(skillReport);
+      const accuracy = getAccuracy();
+
+      els.reportTitle.textContent = `เยี่ยมมาก ${state.student.name}!`;
+      els.reportSubtitle.textContent = `จบภารกิจ ${QUESTION_BANK.length} ข้อ • คะแนน ${state.score} • XP ${state.xp} • ${formatDateTime(state.endedAt)}`;
+      els.finalAccuracy.textContent = `${accuracy}%`;
+
+      els.skillGrid.innerHTML = skillReport.map(item => `
+        <div class="skill-card">
+          <div class="skill-head">
+            <div><b>${item.icon} ${escapeHTML(item.short)}</b><br><small>${escapeHTML(item.name)}</small></div>
+            <b>${item.accuracy}%</b>
+          </div>
+          <div class="mini-track"><div class="mini-bar" style="width:${item.accuracy}%"></div></div>
+        </div>
+      `).join("");
+
+      els.strengthText.textContent = recommendation.strength;
+      els.weaknessText.textContent = recommendation.weakness;
+      switchScreen(els.reportScreen);
+
+      const payload = buildSessionPayload(skillReport, recommendation);
+      localStorage.setItem("rhymeQuest:lastResult", JSON.stringify(payload));
+      await saveSession(payload);
+    }
+
+    function buildSessionPayload(skillReport, recommendation) {
+      return {
+        action: "saveSession",
+        app: CONFIG.APP_NAME,
+        version: CONFIG.VERSION,
+        sheetId: CONFIG.SHEET_ID,
+        sheetName: CONFIG.SHEET_NAME,
+        session: {
+          sessionId: state.sessionId,
+          studentId: state.student.studentId || "",
+          studentName: state.student.name,
+          className: state.student.className,
+          number: state.student.number,
+          startedAt: state.startedAt.toISOString(),
+          endedAt: state.endedAt.toISOString(),
+          totalQuestions: state.answeredCount,
+          correctCount: state.correctCount,
+          totalScore: state.score,
+          totalXp: state.xp,
+          accuracy: getAccuracy(),
+          weakestSkill: recommendation.weakest.skillCode,
+          strongestSkill: recommendation.strongest.skillCode,
+          recommendation: recommendation.weakness,
+          userAgent: navigator.userAgent
+        },
+        skillReport,
+        responses: state.responses
+      };
+    }
+
+    /* =========================================================
+       SECTION: GOOGLE APPS SCRIPT API
+       GitHub Pages -> GAS Web App -> Google Sheet
+    ========================================================== */
+    async function saveSession(payload) {
+      if (!isApiConfigured()) {
+        const pending = JSON.parse(localStorage.getItem("rhymeQuest:pending") || "[]");
+        pending.push(payload);
+        localStorage.setItem("rhymeQuest:pending", JSON.stringify(pending.slice(-20)));
+        showToast("ยังไม่ได้เชื่อม GAS — เก็บผลรอบนี้ไว้ในเครื่องแล้ว");
+        return { ok: false, offline: true };
+      }
+
+      try {
+        await fetch(CONFIG.GAS_WEB_APP_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(payload),
+          keepalive: true
+        });
+        showToast("ส่งผลการเล่นไปยัง Google Sheet แล้ว");
+        return { ok: true };
+      } catch (error) {
+        console.error("saveSession error", error);
+        const pending = JSON.parse(localStorage.getItem("rhymeQuest:pending") || "[]");
+        pending.push(payload);
+        localStorage.setItem("rhymeQuest:pending", JSON.stringify(pending.slice(-20)));
+        showToast("ส่งข้อมูลไม่สำเร็จ จึงสำรองผลไว้ในเครื่อง");
+        return { ok: false, error: String(error) };
+      }
+    }
+
+    /* =========================================================
+       SECTION: QUESTION SETTINGS ENGINE
+       แก้ชุดคำถามจากหน้าเว็บ + localStorage + GAS cloud config
+    ========================================================== */
+    function getSkillCodeForStage(stage) {
+      return STAGES.find(item => item.stage === Number(stage))?.skill || "RH01";
+    }
+
+    function persistQuestionBankLocal() {
+      localStorage.setItem(CONFIG.QUESTION_STORAGE_KEY, JSON.stringify(questionBankSource));
+    }
+
+    function loadQuestionBankLocal() {
+      try {
+        const raw = localStorage.getItem(CONFIG.QUESTION_STORAGE_KEY);
+        if (!raw) return false;
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed) || !parsed.length) return false;
+        questionBankSource = parsed;
+        return true;
+      } catch (error) {
+        console.warn("loadQuestionBankLocal", error);
+        return false;
+      }
+    }
+
+    function applyExpandedQuestionMigration() {
+      // รองรับผู้ใช้ที่มีชุดโจทย์เวอร์ชันเก่าอยู่ใน localStorage หรือ Google Sheet
+      // เติมเฉพาะข้อเริ่มต้นที่ยังขาด เพื่อให้ด่าน 1, 2, 3 และ 5 มีอย่างน้อยด่านละ 10 ข้อ
+      const targetStages = new Set([1, 2, 3, 5]);
+      const existingIds = new Set(questionBankSource.map(q => q.id));
+      let added = 0;
+
+      targetStages.forEach(stage => {
+        let stageCount = questionBankSource.filter(q => Number(q.stage) === stage).length;
+        if (stageCount >= 10) return;
+
+        const defaultsForStage = DEFAULT_QUESTION_BANK.filter(q => Number(q.stage) === stage);
+        for (const defaultQuestion of defaultsForStage) {
+          if (stageCount >= 10) break;
+          if (!existingIds.has(defaultQuestion.id)) {
+            questionBankSource.push(structuredCloneSafe(defaultQuestion));
+            existingIds.add(defaultQuestion.id);
+            stageCount += 1;
+            added += 1;
+          }
+        }
+      });
+
+      if (added) persistQuestionBankLocal();
+      return added > 0;
+    }
+
+    function fetchQuestionBankFromGas() {
+      if (!isApiConfigured()) return Promise.resolve(null);
+      return new Promise(resolve => {
+        const callbackName = `__rqQuestionBank_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        const script = document.createElement("script");
+        const timeout = setTimeout(() => cleanup(null), 7000);
+        function cleanup(result) {
+          clearTimeout(timeout);
+          delete window[callbackName];
+          script.remove();
+          resolve(result);
+        }
+        window[callbackName] = data => cleanup(data);
+        script.onerror = () => cleanup(null);
+        script.src = `${CONFIG.GAS_WEB_APP_URL}?action=loadQuestionBank&callback=${encodeURIComponent(callbackName)}&_=${Date.now()}`;
+        document.head.appendChild(script);
+      });
+    }
+
+    async function loadQuestionBankSettings() {
+      const hasLocal = loadQuestionBankLocal();
+      if (!hasLocal) questionBankSource = structuredCloneSafe(DEFAULT_QUESTION_BANK);
+
+      const remote = await fetchQuestionBankFromGas();
+      if (remote?.ok && Array.isArray(remote.questions) && remote.questions.length) {
+        questionBankSource = remote.questions;
+        persistQuestionBankLocal();
+        els.settingsSyncNote.textContent = `โหลดชุดคำถามกลางจาก Google Sheet แล้ว ${questionBankSource.length} ข้อ`;
+      } else {
+        els.settingsSyncNote.textContent = isApiConfigured()
+          ? "กำลังใช้ชุดคำถามในเครื่อง หากยังไม่มีข้อมูลกลาง ให้บันทึกข้อใดข้อหนึ่งเพื่อสร้างชุดบน Google Sheet"
+          : "ยังไม่ได้เชื่อม GAS: การแก้โจทย์จะเก็บเฉพาะเบราว์เซอร์เครื่องนี้";
+      }
+
+      const expanded = applyExpandedQuestionMigration();
+      if (expanded) {
+        els.settingsSyncNote.textContent += " • เพิ่มชุดโจทย์ด่าน 1, 2, 3 และ 5 เป็นด่านละ 10 ข้อแล้ว";
+      }
+      renderQuestionManagerList();
+    }
+
+    async function syncQuestionBankToGas() {
+      persistQuestionBankLocal();
+      if (!isApiConfigured()) {
+        els.settingsSyncNote.textContent = "บันทึกในเครื่องแล้ว • ยังไม่ได้เชื่อม GAS จึงยังไม่ซิงก์ไปยังนักเรียนเครื่องอื่น";
+        return;
+      }
+      try {
+        await fetch(CONFIG.GAS_WEB_APP_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "saveQuestionBank", questions: questionBankSource })
+        });
+        els.settingsSyncNote.textContent = `ส่งชุดคำถาม ${questionBankSource.length} ข้อไปยัง Google Sheet แล้ว`;
+      } catch (error) {
+        console.error(error);
+        els.settingsSyncNote.textContent = "บันทึกในเครื่องแล้ว แต่ส่งชุดคำถามไป GAS ไม่สำเร็จ";
+      }
+    }
+
+    function renderQuestionManagerList() {
+      if (!els.questionManagerList) return;
+      const keyword = normalizeThaiText(els.questionSearch?.value || "").toLowerCase();
+      const stageFilter = els.questionStageFilter?.value || "all";
+      const currentId = els.editorQuestionId?.value || "";
+      const items = questionBankSource.filter(q => {
+        const matchesStage = stageFilter === "all" || String(q.stage) === stageFilter;
+        const haystack = `${q.id} ${q.title || ""} ${q.prompt || ""} ${q.answer || ""}`.toLowerCase();
+        return matchesStage && (!keyword || normalizeThaiText(haystack).includes(keyword));
+      });
+
+      els.questionManagerList.innerHTML = items.length ? items.map(q => `
+        <button class="question-list-item ${q.id === currentId ? "active" : ""}" type="button" data-question-id="${escapeHTML(q.id)}">
+          <strong>ด่าน ${q.stage} • ${escapeHTML(q.id)} ${q.enabled === false ? "(ปิดใช้)" : ""}</strong>
+          <small>${escapeHTML(q.prompt || q.title || "ไม่มีข้อความโจทย์")}</small>
+        </button>
+      `).join("") : `<div class="question-hint" style="padding:12px">ไม่พบข้อคำถาม</div>`;
+
+      els.questionManagerList.querySelectorAll("[data-question-id]").forEach(button => {
+        button.addEventListener("click", () => openQuestionEditor(button.dataset.questionId));
+      });
+    }
+
+    function updateEditorConditionalFields() {
+      const type = els.editorType.value;
+      const isText = type === "text-rhyme";
+      const isChain = type === "chain";
+      const isPoem = type === "poem-choice" || type === "poem-repair";
+      els.choicesField.classList.toggle("hidden", isText);
+      els.answerField.classList.toggle("hidden", isText);
+      els.acceptedAnswersField.classList.toggle("hidden", !isText);
+      els.chainField.classList.toggle("hidden", !isChain);
+      els.poemField.classList.toggle("hidden", !isPoem);
+    }
+
+    function openQuestionEditor(questionId) {
+      const q = questionBankSource.find(item => item.id === questionId);
+      if (!q) return;
+      els.editorQuestionId.value = q.id;
+      els.editorStage.value = String(q.stage || 1);
+      els.editorType.value = q.type || "choice";
+      els.editorTitle.value = q.title || "";
+      els.editorPrompt.value = q.prompt || "";
+      els.editorChoices.value = Array.isArray(q.choices) ? q.choices.join("\n") : "";
+      els.editorAnswer.value = q.answer || "";
+      els.editorAcceptedAnswers.value = Array.isArray(q.acceptedAnswers) ? q.acceptedAnswers.join("\n") : "";
+      els.editorChain.value = Array.isArray(q.chain) ? q.chain.join("\n") : "";
+      els.editorPoem.value = Array.isArray(q.poem) ? q.poem.join("\n") : "";
+      els.editorExplanation.value = q.explanation || "";
+      els.editorEnabled.checked = q.enabled !== false;
+      updateEditorConditionalFields();
+      renderQuestionManagerList();
+    }
+
+    function createQuestionDraft() {
+      const stage = 1;
+      const id = `CUSTOM-${Date.now()}`;
+      const draft = {
+        id, stage, skillCode: getSkillCodeForStage(stage), type: "choice",
+        title: "คำใดคล้องจองกับคำว่า", prompt: "",
+        choices: ["", "", "", ""], answer: "", explanation: "", enabled: true
+      };
+      questionBankSource.push(draft);
+      renderQuestionManagerList();
+      openQuestionEditor(id);
+    }
+
+    function readLines(value) {
+      return String(value || "").split(/\r?\n/).map(item => item.trim()).filter(Boolean);
+    }
+
+    async function saveQuestionFromEditor(event) {
+      event.preventDefault();
+      const id = els.editorQuestionId.value || `CUSTOM-${Date.now()}`;
+      const stage = Number(els.editorStage.value);
+      const type = els.editorType.value;
+      const choices = readLines(els.editorChoices.value);
+      const acceptedAnswers = readLines(els.editorAcceptedAnswers.value);
+      const answer = els.editorAnswer.value.trim();
+
+      if (type !== "text-rhyme" && choices.length < 2) return showToast("ข้อแบบตัวเลือกต้องมีอย่างน้อย 2 ตัวเลือก");
+      if (type !== "text-rhyme" && !choices.includes(answer)) return showToast("เฉลยต้องตรงกับตัวเลือกหนึ่งข้อ");
+      if (type === "text-rhyme" && !acceptedAnswers.length) return showToast("ด่านพิมพ์คำควรมีคลังคำตอบอย่างน้อย 1 คำ");
+
+      const q = {
+        id,
+        stage,
+        skillCode: getSkillCodeForStage(stage),
+        type,
+        title: els.editorTitle.value.trim(),
+        prompt: els.editorPrompt.value.trim(),
+        explanation: els.editorExplanation.value.trim(),
+        enabled: els.editorEnabled.checked
+      };
+      if (type === "text-rhyme") {
+        q.acceptedAnswers = acceptedAnswers;
+        q.answer = acceptedAnswers.join(" / ");
+      } else {
+        q.choices = choices;
+        q.answer = answer;
+      }
+      if (type === "chain") q.chain = readLines(els.editorChain.value);
+      if (type === "poem-choice" || type === "poem-repair") q.poem = readLines(els.editorPoem.value);
+
+      const index = questionBankSource.findIndex(item => item.id === id);
+      if (index >= 0) questionBankSource[index] = q;
+      else questionBankSource.push(q);
+      await syncQuestionBankToGas();
+      renderQuestionManagerList();
+      openQuestionEditor(id);
+      showToast("บันทึกข้อคำถามแล้ว");
+    }
+
+    async function deleteCurrentQuestion() {
+      const id = els.editorQuestionId.value;
+      if (!id) return;
+      if (!confirm(`ลบข้อ ${id} ใช่หรือไม่?`)) return;
+      questionBankSource = questionBankSource.filter(item => item.id !== id);
+      await syncQuestionBankToGas();
+      renderQuestionManagerList();
+      if (questionBankSource[0]) openQuestionEditor(questionBankSource[0].id);
+      else createQuestionDraft();
+    }
+
+    async function resetQuestionBank() {
+      if (!confirm("คืนค่าชุดคำถามทั้งหมดเป็นค่าเริ่มต้น? ข้อที่เพิ่มเองจะถูกแทนที่")) return;
+      questionBankSource = structuredCloneSafe(DEFAULT_QUESTION_BANK);
+      await syncQuestionBankToGas();
+      renderQuestionManagerList();
+      openQuestionEditor(questionBankSource[0].id);
+      showToast("คืนค่าโจทย์เริ่มต้นแล้ว");
+    }
+
+    function exportQuestionBank() {
+      const blob = new Blob([JSON.stringify(questionBankSource, null, 2)], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "rhyme-quest-question-bank.json";
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function importQuestionBank(file) {
+      if (!file) return;
+      try {
+        const data = JSON.parse(await file.text());
+        if (!Array.isArray(data) || !data.length) throw new Error("รูปแบบไฟล์ไม่ถูกต้อง");
+        questionBankSource = data;
+        await syncQuestionBankToGas();
+        renderQuestionManagerList();
+        openQuestionEditor(questionBankSource[0].id);
+        showToast("นำเข้าชุดคำถามแล้ว");
+      } catch (error) {
+        showToast(`นำเข้าไม่สำเร็จ: ${error.message}`);
+      } finally {
+        els.importQuestionsInput.value = "";
+      }
+    }
+
+    function openSettings() {
+      const gameIsActive = !els.gameScreen.classList.contains("hidden") && state.startedAt && !state.endedAt;
+      if (gameIsActive) {
+        showToast("เพื่อป้องกันคะแนนซ้ำ กรุณาจบเกมก่อนเข้าสู่หน้าตั้งค่า");
+        return;
+      }
+      settingsPreviousScreen = [els.loginScreen, els.reportScreen].find(screen => !screen.classList.contains("hidden")) || els.loginScreen;
+      clearInterval(state.timerInterval);
+      switchScreen(els.settingsScreen);
+      renderQuestionManagerList();
+      if (!els.editorQuestionId.value && questionBankSource[0]) openQuestionEditor(questionBankSource[0].id);
+    }
+
+    /* =========================================================
+       SECTION: SAVE SCORE IMAGE
+       สร้างภาพจากการ์ดผลคะแนน แล้วใช้ Web Share API บนมือถือ
+       หากอุปกรณ์ไม่รองรับ จะดาวน์โหลดไฟล์ PNG แทน
+    ========================================================== */
+    function safeFileName(value) {
+      return String(value || "rhyme-quest")
+        .replace(/[\/:*?"<>|]+/g, "-")
+        .replace(/\s+/g, "-")
+        .slice(0, 80);
+    }
+
+    async function saveScoreImage() {
+      if (typeof html2canvas !== "function") {
+        showToast("ไม่สามารถโหลดระบบสร้างภาพได้ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่");
+        return;
+      }
+
+      const button = els.saveScoreImageButton;
+      const originalText = button.textContent;
+      button.disabled = true;
+      button.textContent = "กำลังสร้างภาพ...";
+
+      try {
+        const reportCard = els.reportScreen.querySelector(".report-card");
+        const canvas = await html2canvas(reportCard, {
+          scale: Math.min(window.devicePixelRatio || 2, 3),
+          useCORS: true,
+          backgroundColor: "#101c31",
+          logging: false,
+          ignoreElements: element => element.hasAttribute?.("data-html2canvas-ignore")
+        });
+
+        const blob = await new Promise((resolve, reject) => {
+          canvas.toBlob(result => result ? resolve(result) : reject(new Error("สร้างไฟล์ภาพไม่สำเร็จ")), "image/png", 1);
+        });
+
+        const studentName = safeFileName(state.student?.name || "student");
+        const fileName = `Rhyme-Quest-${studentName}-${Date.now()}.png`;
+        const file = new File([blob], fileName, { type: "image/png" });
+
+        if (navigator.share && navigator.canShare?.({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: "ผลคะแนน Rhyme Quest",
+              text: `ผลการฝึกคำคล้องจองของ ${state.student?.name || "นักเรียน"}`
+            });
+            showToast("สร้างภาพแล้ว สามารถเลือกบันทึกลงแกลอรีจากเมนูของมือถือได้");
+            return;
+          } catch (shareError) {
+            if (shareError?.name === "AbortError") return;
+            console.warn("Web Share failed, fallback to download", shareError);
+          }
+        }
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        showToast("บันทึกภาพ PNG แล้ว โปรดตรวจสอบโฟลเดอร์ดาวน์โหลดหรือแกลอรีของอุปกรณ์");
+      } catch (error) {
+        console.error(error);
+        showToast(`บันทึกภาพไม่สำเร็จ: ${error.message || error}`);
+      } finally {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    }
+
+    /* =========================================================
+       SECTION: EXPORT RESULT
+    ========================================================== */
+    function downloadLastResult() {
+      const raw = localStorage.getItem("rhymeQuest:lastResult");
+      if (!raw) return showToast("ยังไม่มีผลการเล่นให้ดาวน์โหลด");
+      const blob = new Blob([raw], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${state.sessionId || "rhyme-quest-result"}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    /* =========================================================
+       SECTION: EVENTS
+    ========================================================== */
+    els.loginForm.addEventListener("submit", event => {
+      event.preventDefault();
+      const form = new FormData(els.loginForm);
+      const student = {
+        name: String(form.get("studentName") || "").trim(),
+        className: String(form.get("studentClass") || "").trim(),
+        number: String(form.get("studentNumber") || "").trim(),
+        studentId: String(form.get("studentId") || "").trim()
+      };
+      if (!student.name || !student.className || !student.number) return;
+      startGame(student);
+    });
+
+    els.nextButton.addEventListener("click", () => {
+      if (!state.locked) return;
+      state.currentIndex += 1;
+      renderQuestion();
+    });
+
+    els.playAgainButton.addEventListener("click", () => {
+      startGame({ ...state.student });
+    });
+
+    els.saveScoreImageButton.addEventListener("click", saveScoreImage);
+    els.downloadResultButton.addEventListener("click", downloadLastResult);
+
+    els.openSettingsButton.addEventListener("click", openSettings);
+    els.backFromSettingsButton.addEventListener("click", () => {
+      switchScreen(settingsPreviousScreen || els.loginScreen);
+    });
+    els.addQuestionButton.addEventListener("click", createQuestionDraft);
+    els.questionSearch.addEventListener("input", renderQuestionManagerList);
+    els.questionStageFilter.addEventListener("change", renderQuestionManagerList);
+    els.editorType.addEventListener("change", updateEditorConditionalFields);
+    els.editorStage.addEventListener("change", () => {
+      const stage = Number(els.editorStage.value);
+      const defaultType = { 1: "choice", 2: "choice", 3: "chain", 4: "poem-choice", 5: "text-rhyme" }[stage];
+      els.editorType.value = defaultType;
+      updateEditorConditionalFields();
+    });
+    els.questionEditorForm.addEventListener("submit", saveQuestionFromEditor);
+    els.deleteQuestionButton.addEventListener("click", deleteCurrentQuestion);
+    els.resetQuestionsButton.addEventListener("click", resetQuestionBank);
+    els.exportQuestionsButton.addEventListener("click", exportQuestionBank);
+    els.importQuestionsInput.addEventListener("change", () => importQuestionBank(els.importQuestionsInput.files[0]));
+
+    /* =========================================================
+       SECTION: APP INIT
+    ========================================================== */
+    setConnectionStatus();
+    loadQuestionBankSettings();
+  </script>
+</body>
+</html>
