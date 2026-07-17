@@ -314,6 +314,90 @@
     .app-credit { margin-top: auto; padding: 22px 8px 0; text-align: center; color: var(--muted); font-size: .86rem; letter-spacing: .01em; }
     .app-credit strong { color: #ddd6fe; font-weight: 500; }
 
+
+    /* =========================================================
+       SECTION: STAGE TRANSITION & FINISH CELEBRATION
+    ========================================================== */
+    .stage-transition-overlay, .finish-celebration {
+      position: fixed; inset: 0; z-index: 1200; display: grid; place-items: center;
+      background: rgba(5, 12, 24, .88); backdrop-filter: blur(14px);
+      opacity: 0; pointer-events: none; transition: opacity .28s ease;
+    }
+    .stage-transition-overlay.show, .finish-celebration.show { opacity: 1; pointer-events: auto; }
+    .stage-transition-card {
+      width: min(440px, calc(100% - 36px)); text-align: center; padding: 34px 26px;
+      border: 1px solid rgba(255,255,255,.13); border-radius: 30px;
+      background: linear-gradient(155deg, rgba(30,41,69,.98), rgba(14,24,44,.98));
+      box-shadow: 0 30px 80px rgba(0,0,0,.4); transform: scale(.82) translateY(22px);
+      transition: transform .42s cubic-bezier(.2,.9,.2,1.25);
+    }
+    .stage-transition-overlay.show .stage-transition-card { transform: scale(1) translateY(0); }
+    .stage-transition-icon { font-size: 4.2rem; animation: stageBounce .8s ease infinite alternate; }
+    .stage-transition-kicker { margin-top: 10px; color: #c4b5fd; font-weight: 700; letter-spacing: .08em; }
+    .stage-transition-title { margin: 5px 0 4px; font-size: clamp(2rem, 8vw, 3.4rem); }
+    .stage-transition-subtitle { margin: 0; color: var(--muted); }
+    @keyframes stageBounce { to { transform: translateY(-9px) rotate(3deg); } }
+
+    .finish-celebration { overflow: hidden; }
+    .finish-celebration-card {
+      position: relative; z-index: 2; width: min(520px, calc(100% - 34px)); text-align: center;
+      padding: 40px 26px; border-radius: 32px; border: 1px solid rgba(255,255,255,.14);
+      background: linear-gradient(145deg, rgba(30,41,69,.97), rgba(15,23,42,.97));
+      box-shadow: 0 30px 90px rgba(0,0,0,.48); transform: scale(.72);
+      transition: transform .55s cubic-bezier(.2,.95,.25,1.25);
+    }
+    .finish-celebration.show .finish-celebration-card { transform: scale(1); }
+    .finish-trophy { font-size: 5.2rem; animation: trophyPop 1s ease both; }
+    .finish-celebration h2 { margin: 8px 0 6px; font-size: clamp(2rem, 8vw, 3.5rem); }
+    .finish-celebration p { margin: 0; color: var(--muted); font-size: 1.05rem; }
+    @keyframes trophyPop { 0%{transform:scale(.2) rotate(-25deg)} 65%{transform:scale(1.2) rotate(8deg)} 100%{transform:scale(1) rotate(0)} }
+    .confetti-piece {
+      position: absolute; top: -12vh; width: 10px; height: 18px; border-radius: 3px;
+      background: hsl(var(--hue), 90%, 62%); left: var(--left);
+      animation: confettiFall var(--dur) linear var(--delay) forwards; transform: rotate(var(--rot));
+    }
+    @keyframes confettiFall { to { transform: translate3d(var(--drift), 120vh, 0) rotate(760deg); } }
+
+    /* =========================================================
+       SECTION: PORTRAIT SCORE CARD FOR IMAGE EXPORT
+    ========================================================== */
+    #scoreCaptureCard {
+      position: fixed; left: -10000px; top: 0; width: 1080px; height: 1350px;
+      padding: 72px; color: #f8fafc; background:
+        radial-gradient(circle at 15% 8%, rgba(124,58,237,.44), transparent 27%),
+        radial-gradient(circle at 88% 18%, rgba(34,211,238,.24), transparent 24%),
+        linear-gradient(155deg, #07111f, #101c31 62%, #111827);
+      font-family: "Kanit", sans-serif; overflow: hidden;
+    }
+    .capture-brand { display:flex; justify-content:space-between; align-items:center; gap:20px; }
+    .capture-brand-title { font-size: 30px; font-weight: 800; letter-spacing:.04em; }
+    .capture-brand-sub { color:#a5b4fc; font-size:22px; }
+    .capture-badge { padding:12px 20px; border:1px solid rgba(255,255,255,.15); border-radius:999px; background:rgba(255,255,255,.07); font-size:20px; }
+    .capture-heading { margin-top:54px; text-align:center; }
+    .capture-heading h2 { margin:0; font-size:54px; }
+    .capture-heading p { margin:8px 0 0; color:#b6c4d7; font-size:24px; }
+    .capture-student {
+      margin-top:40px; padding:28px 34px; border-radius:28px; background:rgba(255,255,255,.07);
+      border:1px solid rgba(255,255,255,.13); display:grid; grid-template-columns:1fr auto; gap:26px; align-items:center;
+    }
+    .capture-student-name { font-size:38px; font-weight:800; line-height:1.2; }
+    .capture-student-meta { margin-top:8px; color:#cbd5e1; font-size:25px; }
+    .capture-score { width:180px; height:180px; border-radius:50%; display:grid; place-items:center; text-align:center;
+      background:linear-gradient(135deg,rgba(124,58,237,.78),rgba(34,211,238,.5)); border:2px solid rgba(255,255,255,.2); }
+    .capture-score b { display:block; font-size:58px; line-height:1; }
+    .capture-score span { font-size:18px; color:#e2e8f0; }
+    .capture-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:24px; }
+    .capture-summary-item { padding:18px; text-align:center; border-radius:20px; background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.1); }
+    .capture-summary-item b { display:block; font-size:31px; }
+    .capture-summary-item span { color:#aebfd3; font-size:18px; }
+    .capture-skills { margin-top:34px; display:grid; gap:16px; }
+    .capture-skill { display:grid; grid-template-columns:235px 1fr 70px; gap:16px; align-items:center; font-size:21px; }
+    .capture-skill-track { height:18px; border-radius:999px; background:rgba(255,255,255,.09); overflow:hidden; }
+    .capture-skill-bar { height:100%; border-radius:inherit; background:linear-gradient(90deg,#8b5cf6,#22d3ee); }
+    .capture-note { margin-top:34px; padding:24px 28px; border-radius:24px; background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.1); }
+    .capture-note strong { font-size:23px; } .capture-note p { margin:8px 0 0; color:#cbd5e1; font-size:20px; line-height:1.55; }
+    .capture-credit { position:absolute; left:72px; right:72px; bottom:50px; padding-top:22px; border-top:1px solid rgba(255,255,255,.12); text-align:center; color:#94a3b8; font-size:20px; }
+
     .toast {
       position: fixed; right: 18px; bottom: 18px; z-index: 999;
       max-width: min(420px, calc(100% - 36px)); padding: 13px 16px;
@@ -606,6 +690,45 @@
   </div>
 
   <div id="toast" class="toast"></div>
+
+  <div id="stageTransitionOverlay" class="stage-transition-overlay" aria-hidden="true">
+    <div class="stage-transition-card">
+      <div id="stageTransitionIcon" class="stage-transition-icon">🎯</div>
+      <div id="stageTransitionKicker" class="stage-transition-kicker">เข้าสู่ด่านใหม่</div>
+      <h2 id="stageTransitionTitle" class="stage-transition-title">ด่าน 2</h2>
+      <p id="stageTransitionSubtitle" class="stage-transition-subtitle"></p>
+    </div>
+  </div>
+
+  <div id="finishCelebration" class="finish-celebration" aria-hidden="true">
+    <div id="confettiLayer"></div>
+    <div class="finish-celebration-card">
+      <div class="finish-trophy">🏆</div>
+      <h2>ภารกิจสำเร็จ!</h2>
+      <p id="finishCelebrationText">ยอดเยี่ยมมาก คุณพิชิตทุกด่านแล้ว</p>
+    </div>
+  </div>
+
+  <div id="scoreCaptureCard" aria-hidden="true">
+    <div class="capture-brand">
+      <div><div class="capture-brand-title">🎵 RHYME QUEST</div><div class="capture-brand-sub">ภารกิจพิชิตคำคล้องจอง</div></div>
+      <div class="capture-badge">ผลการเรียนรู้</div>
+    </div>
+    <div class="capture-heading"><h2>สรุปผลการฝึกคำคล้องจอง</h2><p id="captureDate">-</p></div>
+    <div class="capture-student">
+      <div><div id="captureStudentName" class="capture-student-name">-</div><div id="captureStudentMeta" class="capture-student-meta">-</div></div>
+      <div class="capture-score"><div><b id="captureAccuracy">0%</b><span>ความแม่นยำรวม</span></div></div>
+    </div>
+    <div class="capture-summary">
+      <div class="capture-summary-item"><b id="captureScore">0</b><span>คะแนน</span></div>
+      <div class="capture-summary-item"><b id="captureCorrect">0/0</b><span>ตอบถูก</span></div>
+      <div class="capture-summary-item"><b id="captureXp">0</b><span>XP</span></div>
+    </div>
+    <div id="captureSkills" class="capture-skills"></div>
+    <div class="capture-note"><strong>🧭 คำแนะนำเพื่อพัฒนา</strong><p id="captureAdvice">-</p></div>
+    <div class="capture-credit">พัฒนาโดย ครูนนทพัทธ์ หิรัญเรือง</div>
+  </div>
+
 
   <script>
     "use strict";
@@ -1025,6 +1148,15 @@
       weaknessText: $("#weaknessText"),
       playAgainButton: $("#playAgainButton"),
       saveScoreImageButton: $("#saveScoreImageButton"),
+      stageTransitionOverlay: $("#stageTransitionOverlay"),
+      stageTransitionIcon: $("#stageTransitionIcon"),
+      stageTransitionKicker: $("#stageTransitionKicker"),
+      stageTransitionTitle: $("#stageTransitionTitle"),
+      stageTransitionSubtitle: $("#stageTransitionSubtitle"),
+      finishCelebration: $("#finishCelebration"),
+      finishCelebrationText: $("#finishCelebrationText"),
+      confettiLayer: $("#confettiLayer"),
+      scoreCaptureCard: $("#scoreCaptureCard"),
       downloadResultButton: $("#downloadResultButton"),
       openSettingsButton: $("#openSettingsButton"),
       backFromSettingsButton: $("#backFromSettingsButton"),
@@ -1298,6 +1430,50 @@
         item.classList.toggle("active", stageNo === currentStage);
         item.classList.toggle("done", stageNo < currentStage);
       });
+    }
+
+
+    function showStageTransition(stageNo) {
+      const stage = STAGES.find(item => item.stage === Number(stageNo));
+      if (!stage) return Promise.resolve();
+      els.stageTransitionIcon.textContent = stage.icon;
+      els.stageTransitionKicker.textContent = `เข้าสู่ด่าน ${stage.stage}`;
+      els.stageTransitionTitle.textContent = stage.title;
+      els.stageTransitionSubtitle.textContent = stage.subtitle;
+      els.stageTransitionOverlay.classList.add("show");
+      els.stageTransitionOverlay.setAttribute("aria-hidden", "false");
+      return new Promise(resolve => setTimeout(() => {
+        els.stageTransitionOverlay.classList.remove("show");
+        els.stageTransitionOverlay.setAttribute("aria-hidden", "true");
+        setTimeout(resolve, 280);
+      }, 1350));
+    }
+
+    function createConfetti(count = 70) {
+      els.confettiLayer.innerHTML = "";
+      for (let i = 0; i < count; i += 1) {
+        const piece = document.createElement("span");
+        piece.className = "confetti-piece";
+        piece.style.setProperty("--hue", String(Math.floor(Math.random() * 360)));
+        piece.style.setProperty("--left", `${Math.random() * 100}%`);
+        piece.style.setProperty("--dur", `${2.4 + Math.random() * 2.1}s`);
+        piece.style.setProperty("--delay", `${Math.random() * .55}s`);
+        piece.style.setProperty("--rot", `${Math.random() * 180}deg`);
+        piece.style.setProperty("--drift", `${-100 + Math.random() * 200}px`);
+        els.confettiLayer.appendChild(piece);
+      }
+    }
+
+    function showFinishCelebration() {
+      createConfetti();
+      els.finishCelebrationText.textContent = `${state.student?.name || "นักเรียน"} พิชิตครบทั้ง 5 ด่านแล้ว!`;
+      els.finishCelebration.classList.add("show");
+      els.finishCelebration.setAttribute("aria-hidden", "false");
+      return new Promise(resolve => setTimeout(() => {
+        els.finishCelebration.classList.remove("show");
+        els.finishCelebration.setAttribute("aria-hidden", "true");
+        setTimeout(resolve, 320);
+      }, 2200));
     }
 
     /* =========================================================
@@ -1595,6 +1771,7 @@
 
       els.strengthText.textContent = recommendation.strength;
       els.weaknessText.textContent = recommendation.weakness;
+      await showFinishCelebration();
       switchScreen(els.reportScreen);
 
       const payload = buildSessionPayload(skillReport, recommendation);
@@ -1976,13 +2153,31 @@
       button.textContent = "กำลังสร้างภาพ...";
 
       try {
-        const reportCard = els.reportScreen.querySelector(".report-card");
-        const canvas = await html2canvas(reportCard, {
-          scale: Math.min(window.devicePixelRatio || 2, 3),
+        const skillReport = calculateSkillReport();
+        const recommendation = buildRecommendation(skillReport);
+        els.scoreCaptureCard.querySelector("#captureDate").textContent = formatDateTime(state.endedAt || new Date());
+        els.scoreCaptureCard.querySelector("#captureStudentName").textContent = state.student?.name || "-";
+        els.scoreCaptureCard.querySelector("#captureStudentMeta").textContent = `ชั้น ${state.student?.className || "-"} • เลขที่ ${state.student?.number || "-"}`;
+        els.scoreCaptureCard.querySelector("#captureAccuracy").textContent = `${getAccuracy()}%`;
+        els.scoreCaptureCard.querySelector("#captureScore").textContent = state.score;
+        els.scoreCaptureCard.querySelector("#captureCorrect").textContent = `${state.correctCount}/${state.answeredCount}`;
+        els.scoreCaptureCard.querySelector("#captureXp").textContent = state.xp;
+        els.scoreCaptureCard.querySelector("#captureAdvice").textContent = recommendation.weakness;
+        els.scoreCaptureCard.querySelector("#captureSkills").innerHTML = skillReport.map(item => `
+          <div class="capture-skill">
+            <div>${item.icon} ${escapeHTML(item.short)}</div>
+            <div class="capture-skill-track"><div class="capture-skill-bar" style="width:${item.accuracy}%"></div></div>
+            <b>${item.accuracy}%</b>
+          </div>
+        `).join("");
+
+        const canvas = await html2canvas(els.scoreCaptureCard, {
+          scale: 1,
+          width: 1080,
+          height: 1350,
           useCORS: true,
-          backgroundColor: "#101c31",
-          logging: false,
-          ignoreElements: element => element.hasAttribute?.("data-html2canvas-ignore")
+          backgroundColor: "#07111f",
+          logging: false
         });
 
         const blob = await new Promise((resolve, reject) => {
@@ -2059,9 +2254,13 @@
       startGame(student);
     });
 
-    els.nextButton.addEventListener("click", () => {
+    els.nextButton.addEventListener("click", async () => {
       if (!state.locked) return;
+      const currentStage = getCurrentQuestion()?.stage;
+      const nextQuestion = QUESTION_BANK[state.currentIndex + 1];
+      const isStageChange = nextQuestion && Number(nextQuestion.stage) !== Number(currentStage);
       state.currentIndex += 1;
+      if (isStageChange) await showStageTransition(nextQuestion.stage);
       renderQuestion();
     });
 
